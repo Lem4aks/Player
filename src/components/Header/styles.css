@@ -1,0 +1,45 @@
+.header{
+    display:  flex;
+    justify-content:  center;
+    width: 100%;
+}
+
+.form{
+    position:  relative;
+    padding:  4px;
+}
+
+.search{
+    cursor:pointer;
+    padding:  4px;
+    color: white;
+}
+
+.form:hover .input {
+    background: #2a2a2a;
+    border: 1px solid white;
+}
+
+
+.form .search{
+    height: 48px;
+    position: absolute;
+    left: 8px;
+    top: 6px;
+    border:  none;
+    background: transparent;
+}
+
+.input{
+    width: 320px;
+    height: 48px;
+    background: #1f1f1f;
+    border: 1px solid transparent;
+    border-radius: 20px;
+    color: white;
+}
+
+.input:hover{
+    background: #2a2a2a;
+    border: 1px solid white;
+}
