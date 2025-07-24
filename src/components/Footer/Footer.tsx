@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef, useCallback} from 'react'
+import React, {useEffect, useState, useRef, useCallback, FC} from 'react'
 import './styles.css';
 import {
     BackwardIcon,
@@ -17,7 +17,7 @@ interface Props {
     toggleFullscreen: () => void;
 }
 
-const Footer = ({ videoRef, isFullscreen, toggleFullscreen }: Props) => {
+const Footer:FC<Props>   = ({ videoRef, isFullscreen, toggleFullscreen }) => {
     const timelineRef = useRef<HTMLDivElement>(null);
     const volumeBarRef = useRef<HTMLDivElement>(null);
 

@@ -8,3 +8,4 @@ export { default as FullscreenIcon } from './FullscreenIcon';
 export { default as ExitFullscreenIcon } from './ExitFullscreenIcon';
 export { default as AddIcon } from './AddIcon';
 export { default as SaveIcon } from './SaveIcon';
+export { default as CloseIcon } from './CloseIcon';

@@ -1,11 +1,12 @@
 import './styles.css';
 import { AddIcon } from "../../assets/svg";
+import {FC} from "react";
 
 type Props = {
     onAddClick: () => void;
 };
 
-const Header = ({ onAddClick }: Props) => {
+const Header:FC<Props>  = ({ onAddClick }) => {
     return (
         <div className="header">
             <button className="add" onClick={onAddClick}>

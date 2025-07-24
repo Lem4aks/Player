@@ -1,16 +1,33 @@
 import './styles.css';
-import {SaveIcon} from "../../assets/svg";
+import {CloseIcon, SaveIcon} from "../../assets/svg";
+import {FC} from "react";
+import {Input} from "../Input";
 
-const Form = () => {
+interface Props {
+    onClose: () => void;
+}
+
+const Form:FC<Props> = ({ onClose }) => {
     return (
-        <div className="form-add">
+        <form className="form-add">
+            <div className="head-form">
+                <h3 className="contenx">Добавьте новую запись:</h3>
+                <button className="close-btn" onClick={onClose}><CloseIcon/></button>
+            </div>
             <div className="form-group">
-            <p>Добавьте новую запись:</p>
-            <input id="src" type="url" placeholder="URL изображения" />
-            <input id="name" type="text" placeholder="Название" />
+                <Input
+                    id="src"
+                    type="url"
+                    placeholder="URL изображения"
+                />
+                <Input
+                    id="name"
+                    type="text"
+                    placeholder="Название"
+                />
             <button className="save"><SaveIcon/></button>
             </div>
-        </div>
+        </form>
     );
 }
 

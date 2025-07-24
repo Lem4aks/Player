@@ -1,0 +1,93 @@
+/* Корневой контейнер для инпута, лейбла и ошибки */
+.input-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-bottom: 12px;
+}
+
+/* Лейбл (подпись) */
+.input-label {
+    font-size: 16px;
+    color: #333;
+    font-weight: 500;
+}
+
+/* Обертка для инпута и иконок */
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Базовые стили для инпута */
+.custom-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 18px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+}
+
+.custom-input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+/* Стили для состояния с ошибкой */
+.custom-input.is-error {
+    border-color: #dc3545;
+}
+
+.custom-input.is-error:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25);
+}
+
+/* Сообщение об ошибке */
+.error-message {
+    color: #dc3545;
+    font-size: 16px;
+    margin: 0;
+    padding: 0;
+}
+
+/* Общие стили для иконок */
+.icon {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+    pointer-events: none; /* Чтобы иконка не мешала клику на инпут */
+}
+
+/* Позиционирование левой иконки */
+.left-icon {
+    left: 12px;
+}
+
+/* Позиционирование правой иконки */
+.right-icon {
+    right: 12px;
+}
+
+/* Если есть иконка, то она может быть кликабельной (например, для показа пароля) */
+.right-icon.clickable {
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+
+/* Добавляем отступы для текста в инпуте, если есть иконки */
+.input-wrapper.has-left-icon .custom-input {
+    padding-left: 20px;
+}
+
+.input-wrapper.has-right-icon .custom-input {
+    padding-right: 20px;
+}

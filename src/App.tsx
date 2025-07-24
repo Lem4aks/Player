@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import './App.css';
-import {Footer, Form, Header} from "./components";
+import { Footer, Form, Header } from "./components";
 
 interface Video {
     id: number;
@@ -18,7 +18,6 @@ const DEFAULT_VIDEO_DATA: Video[] = [
 
 function App() {
     const [isFormVisible, setIsFormVisible] = useState(false);
-
     const [videoData, setVideoData] = useState<Video[]>([]);
 
     const appRef = useRef<HTMLDivElement>(null);
@@ -32,8 +31,7 @@ function App() {
         try {
             const storedVideos = localStorage.getItem(LOCAL_STORAGE_KEY);
             if (storedVideos) {
-                const parsedVideos: Video[] = JSON.parse(storedVideos);
-                setVideoData(parsedVideos);
+                setVideoData(JSON.parse(storedVideos));
             } else {
                 localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(DEFAULT_VIDEO_DATA));
                 setVideoData(DEFAULT_VIDEO_DATA);
@@ -45,12 +43,32 @@ function App() {
     }, []);
 
     const handleAddClick = () => {
-        setIsFormVisible(prev => !prev);
+        setIsFormVisible(true);
     };
+
+    const handleCloseForm = () => {
+        setIsFormVisible(false);
+    };
+
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                handleCloseForm();
+            }
+        };
+
+        if (isFormVisible) {
+            document.addEventListener('keydown', handleKeyDown);
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isFormVisible]);
+
 
     const toggleFullscreen = () => {
         if (!appRef.current) return;
-
         if (document.fullscreenElement) {
             document.exitFullscreen();
         } else {
@@ -61,10 +79,8 @@ function App() {
     const handleVideoClick = (videoId: number) => {
         const videoElement = videoRefs.current[videoId];
         if (!videoElement) return;
-
         setSelectedVideoId(videoId);
         activeVideoRef.current = videoElement;
-
         toggleFullscreen();
     };
 
@@ -88,8 +104,14 @@ function App() {
 
     return (
         <div ref={appRef} className={`App ${isFullscreen ? 'video-is-fullscreen' : ''}`}>
+            {isFormVisible && (
+                <>
+                    <div className="form-overlay" onClick={handleCloseForm}></div>
+                    <Form onClose={handleCloseForm} />
+                </>
+            )}
+
             <Header onAddClick={handleAddClick} />
-            {isFormVisible && <Form />}
             <main className="main">
                 <div className="video-list">
                     {videoData.map(video => (
