@@ -1,17 +1,16 @@
 .header{
     display:  flex;
     justify-content:  center;
-    width: 100%;
+    width: 100vw;
 }
 
 .form{
     position:  relative;
-    padding:  4px;
+    margin: 12px;
 }
 
 .search{
     cursor:pointer;
-    padding:  4px;
     color: white;
 }
 

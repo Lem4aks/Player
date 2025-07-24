@@ -1,0 +1,17 @@
+svg{
+    height:28px;
+    width:28px;
+    fill:gray;
+}
+
+svg:hover{
+    fill:white;
+}
+
+.black-fill{
+    fill:black;
+}
+
+.black-fill:hover{
+    fill:black;
+}

@@ -8,11 +8,35 @@ p{
   background: linear-gradient(#222222, #121212);
 }
 
+.App:fullscreen .header,
+.App:fullscreen .aside {
+  display: none;
+}
+
+.App:fullscreen .main {
+  padding: 0;
+  margin: 0;
+}
+
+.App:fullscreen .footer {
+  flex-shrink: 0;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(to top, rgba(1, 0.5, 0.5, 1), transparent);
+}
+
 .main{
   flex:1;
   display: flex;
-  gap: 4px;
+  gap: 12px;
+  padding: 0px 12px 12px 12px;
   overflow: hidden;
+}
+
+video:fullscreen . footer{
+  display: block;
 }
 
 html,body,#root{
@@ -34,31 +58,12 @@ video{
   height: 100vh;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
 @media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
 
 @keyframes App-logo-spin {
   from {
