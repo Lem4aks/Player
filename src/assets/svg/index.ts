@@ -6,3 +6,5 @@ export { default as ForwardIcon } from './ForwardIcon';
 export { default as BackwardIcon } from './BackwardIcon';
 export { default as FullscreenIcon } from './FullscreenIcon';
 export { default as ExitFullscreenIcon } from './ExitFullscreenIcon';
+export { default as AddIcon } from './AddIcon';
+export { default as SaveIcon } from './SaveIcon';

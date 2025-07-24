@@ -1,11 +1,18 @@
 import './styles.css';
+import { AddIcon } from "../../assets/svg";
 
-const Header = () => {
+type Props = {
+    onAddClick: () => void;
+};
+
+const Header = ({ onAddClick }: Props) => {
     return (
         <div className="header">
+            <button className="add" onClick={onAddClick}>
+                <AddIcon/>
+            </button>
             <div className="form">
-                <button className="search">Search</button>
-                <input className="input" type="text"/>
+                <input className="input" type="text" placeholder="search"/>
             </div>
         </div>
     )

@@ -85,7 +85,8 @@ const Footer = ({ videoRef, isFullscreen, toggleFullscreen }: Props) => {
             video.removeEventListener('play', onPlay);
             video.removeEventListener('pause', onPause);
         };
-    }, [videoRef, isSeeking]);
+
+    }, [videoRef, isFullscreen, isSeeking]);
 
     const handleTimelineUpdate = useCallback((event: MouseEvent) => {
         if (!videoRef.current || !timelineRef.current || !videoRef.current.duration) return;

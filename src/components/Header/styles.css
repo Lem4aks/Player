@@ -1,7 +1,20 @@
 .header{
     display:  flex;
     justify-content:  center;
+    align-items:  center;
     width: 100vw;
+}
+
+.add{
+    border: none;
+    width: 48px;
+    height: 48px;
+    border-radius: 40px;
+    background: #1f1f1f;
+}
+
+.add:hover{
+    background: #2a2a2a;
 }
 
 .form{
@@ -30,8 +43,9 @@
 }
 
 .input{
+    padding: 12px;
     width: 320px;
-    height: 48px;
+    height: 32px;
     background: #1f1f1f;
     border: 1px solid transparent;
     border-radius: 20px;

@@ -1,0 +1,35 @@
+.form-add{
+    width: 240px;
+    height: 180px;
+    background: linear-gradient(#323232, #111111);
+    border-radius: 20px;
+    padding: 20px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#src, #name{
+    height: 24px;
+}
+
+.form-group{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.save:hover{
+    background: #2a2a2a;
+}
+
+.save{
+    background: #1f1f1f;
+    border: none;
+    width: 48px;
+    height: 48px;
+    align-self: center;
+    background: #2f2f2f;
+    border-radius: 40px;
+}

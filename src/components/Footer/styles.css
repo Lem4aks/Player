@@ -54,6 +54,8 @@
 }
 
 .range {
+    height: 52px;
+    width: 68px;
     border: none;
     cursor: pointer;
     background-color: transparent;
