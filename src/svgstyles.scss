@@ -1,0 +1,27 @@
+svg {
+    height: 28px;
+    width: 28px;
+    fill: gray;
+
+    &:hover {
+        fill: white;
+    }
+}
+
+.black-fill {
+    fill: black;
+
+    &:hover {
+        fill: black;
+    }
+}
+
+.close {
+    height: 14px;
+    width: 14px;
+    transition: transform 0.4s ease, background-color 0.4s ease;
+
+    &:hover {
+        transform: scale(1.4);
+    }
+}

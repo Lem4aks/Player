@@ -1,19 +1,27 @@
-import './styles.css';
+import './styles.scss';
 import { AddIcon } from "../../assets/svg";
 import {FC} from "react";
 
-type Props = {
+interface Props{
     onAddClick: () => void;
+    searchTerm: string;
+    onSearchChange: (query: string) => void;
 };
 
-const Header:FC<Props>  = ({ onAddClick }) => {
+const Header: FC<Props>  = ({ onAddClick, searchTerm, onSearchChange }) => {
     return (
         <div className="header">
             <button className="add" onClick={onAddClick}>
                 <AddIcon/>
             </button>
             <div className="form">
-                <input className="input" type="text" placeholder="search"/>
+                <input
+                    className="input"
+                    type="text"
+                    placeholder="Search"
+                    value={searchTerm}
+                    onChange={(e) => onSearchChange(e.target.value)}
+                />
             </div>
         </div>
     )

@@ -1,0 +1,129 @@
+.footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.timer {
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stdbutton {
+  border: none;
+  cursor: pointer;
+  background-color: transparent;
+}
+
+.player {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 12px;
+}
+
+.center {
+  flex-grow: 6;
+}
+
+.left {
+  min-width: 120px;
+  width: 180px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.soudlap {
+  height: 6px;
+  background: #4d4d4d;
+  border-radius: 20px;
+  flex-grow: 1;
+
+  &:hover {
+    cursor: pointer;
+
+    .played {
+      background-color: #1ed760;
+    }
+
+    .current {
+      width: 8px;
+      height: 8px;
+    }
+  }
+}
+
+.range {
+  height: 52px;
+  width: 68px;
+  border: none;
+  cursor: pointer;
+  background-color: transparent;
+  color: white;
+}
+
+.timelaps {
+  width: 100%;
+  height: 6px;
+  background: #4d4d4d;
+  border-radius: 20px;
+
+  &:hover {
+    cursor: pointer;
+
+    .played {
+      background-color: #1ed760;
+    }
+
+    .current {
+      width: 8px;
+      height: 8px;
+    }
+  }
+}
+
+.playandstop {
+  cursor: pointer;
+  background-color: #1ed760;
+  height: 48px;
+  width: 48px;
+  border-radius: 40px;
+  border: none;
+  transition: transform 0.4s ease, background-color 0.4s ease;
+
+  &:hover {
+    background-color: #37d46f;
+    transform: scale(1.05);
+  }
+}
+
+.played {
+  position: relative;
+  background-color: white;
+  height: 6px;
+  border-radius: 20px;
+
+  &:hover {
+    background-color: #1ed760;
+  }
+}
+
+.current {
+  position: absolute;
+  top: -1px;
+  right: 0;
+  width: 0;
+  background-color: white;
+  height: 0;
+  border-radius: 40px;
+}

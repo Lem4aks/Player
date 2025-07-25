@@ -1,5 +1,5 @@
 
-import '../../svgstyles.css'
+import '../../svgstyles.scss'
 
 const ForwardIcon = () => {
     return (

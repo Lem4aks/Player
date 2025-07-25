@@ -1,5 +1,5 @@
 import React, {useEffect, useState, useRef, useCallback, FC} from 'react'
-import './styles.css';
+import './styles.scss';
 import {
     BackwardIcon,
     ExitFullscreenIcon,

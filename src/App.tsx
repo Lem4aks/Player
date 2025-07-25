@@ -1,6 +1,7 @@
+import {Footer, Form, Header, Header_video} from "./components";
 import React, { useRef, useState, useEffect } from 'react';
-import './App.css';
-import { Footer, Form, Header } from "./components";
+import './App.scss';
+
 
 interface Video {
     id: number;
@@ -19,6 +20,7 @@ const DEFAULT_VIDEO_DATA: Video[] = [
 function App() {
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [videoData, setVideoData] = useState<Video[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const appRef = useRef<HTMLDivElement>(null);
     const videoRefs = useRef<{ [key: number]: HTMLVideoElement }>({});
@@ -26,6 +28,7 @@ function App() {
 
     const [selectedVideoId, setSelectedVideoId] = useState<number | null>(null);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    
 
     useEffect(() => {
         try {
@@ -49,6 +52,19 @@ function App() {
     const handleCloseForm = () => {
         setIsFormVisible(false);
     };
+
+    const handleAddVideo = (src: string, title: string) => {
+        const newVideo: Video = {
+            id: Date.now(),
+            src,
+            title
+        };
+        const updatedVideos = [...videoData, newVideo];
+        setVideoData(updatedVideos);
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedVideos));
+        handleCloseForm();
+    };
+
 
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
@@ -102,19 +118,34 @@ function App() {
         return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
     }, []);
 
+    const filteredVideos = videoData.filter(video =>
+        video.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const activeVideo = videoData.find(video => video.id === selectedVideoId);
+
     return (
         <div ref={appRef} className={`App ${isFullscreen ? 'video-is-fullscreen' : ''}`}>
+
+            {isFullscreen && activeVideo && (
+                <Header_video title={activeVideo.title} />
+            )}
+
             {isFormVisible && (
                 <>
                     <div className="form-overlay" onClick={handleCloseForm}></div>
-                    <Form onClose={handleCloseForm} />
+                    <Form onClose={handleCloseForm} onAddVideo={handleAddVideo} />
                 </>
             )}
 
-            <Header onAddClick={handleAddClick} />
+            <Header
+                onAddClick={handleAddClick}
+                searchTerm={searchQuery}
+                onSearchChange={setSearchQuery}
+            />
             <main className="main">
                 <div className="video-list">
-                    {videoData.map(video => (
+                    {filteredVideos.map(video => (
                         <div key={video.id} className={`video-item ${selectedVideoId === video.id ? 'is-active' : ''}`}>
                             <p>{video.title}</p>
                             <video
