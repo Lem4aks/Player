@@ -1,4 +1,4 @@
-import '../../svgstyles.css'
+import '../../svgstyles.scss'
 
 const PlayIcon = () => {
   return (
