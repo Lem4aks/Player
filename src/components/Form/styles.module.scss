@@ -1,7 +1,7 @@
-.form-add {
+.formadd {
   z-index: 1000;
-  width: 380px;
-  height: 320px;
+  width: 520px;
+  height: 420px;
   background: linear-gradient(#323232, #111111);
   border-radius: 20px;
   position: absolute;
@@ -9,18 +9,22 @@
   left: 50%;
   transform: translate(-50%, -50%);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-.head-form {
+.headform {
   display: flex;
   align-items: center;
   justify-content: space-between;
   background: #1ed760;
   padding: 20px 20px;
+  flex-shrink: 0;
 
-  .contenx {
+  .contenttitle {
     margin: 0;
     font-weight: bold;
+    color: white;
   }
 
   button {
@@ -30,34 +34,38 @@
   }
 }
 
-.form-group {
+.formgroup {
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 20px;
+  flex: 1;
+  position: relative;
+}
+
+.inputwrapper {
+  margin-bottom: 8px;
 }
 
 .save {
   border: none;
   width: 48px;
   height: 48px;
-  align-self: center;
   background: #1ed760;
   border-radius: 40px;
   cursor: pointer;
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: background-color 0.2s ease;
 
   &:hover {
     background: #1ac257;
   }
-}
 
-.form-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.4);
-  z-index: 999;
-  cursor: pointer;
+  &:disabled {
+    background: #666;
+    cursor: not-allowed;
+  }
 }

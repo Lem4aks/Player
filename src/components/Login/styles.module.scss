@@ -1,0 +1,102 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: black;
+  padding: 20px;
+}
+
+.form {
+  background: linear-gradient(#252525, #222222);
+  padding: 40px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+
+  h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: white;
+    font-size: 24px;
+  }
+}
+
+.backBtn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #f0f8ff;
+  }
+}
+
+.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  border: 1px solid #f5c6cb;
+  font-size: 14px;
+}
+
+.field {
+  margin-bottom: 20px;
+
+  label {
+    display: block;
+    margin-bottom: 6px;
+    color: white;
+    font-weight: 500;
+    font-size: 14px;
+  }
+
+}
+
+.submitBtn {
+  width: 100%;
+  padding: 12px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-bottom: 20px;
+
+  &:hover:not(:disabled) {
+    background-color: #218838;
+  }
+
+  &:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+  }
+}
+
+p {
+  text-align: center;
+  color: white;
+  font-size: 14px;
+
+  a {
+    color: #007bff;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

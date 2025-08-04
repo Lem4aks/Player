@@ -1,54 +1,189 @@
-import './styles.scss';
-import {CloseIcon, SaveIcon} from "../../assets/svg";
-import {FC, FormEvent, useState} from "react";
-import {Input} from "../Input";
+import classes from './styles.module.scss';
+import { CloseIcon, SaveIcon } from '../../assets/svg';
+import { FC } from 'react';
+import { useForm, SubmitHandler } from 'react-hook-form';
+import { Input } from '../Input';
+import { postApi } from '../../api';
 
 interface Props {
-    onClose: () => void;
-    onAddVideo: (src: string, title: string) => void;
+  onClose: () => void;
 }
 
-const Form: FC<Props> = ({ onClose, onAddVideo }) => {
-    const [src, setSrc] = useState('');
-    const [name, setName] = useState('');
+interface IFormInput {
+  src?: string;
+  title: string;
+  type: 'video' | 'image' | 'text';
+  description: string;
+  content?: string;
+}
 
-    const handleSubmit = (e: FormEvent) => {
-        e.preventDefault();
+const postTypes = [
+  { value: 'video', label: 'Video' },
+  { value: 'image', label: 'Image' },
+  { value: 'text', label: 'Text' },
+];
 
-        if (!src.trim() || !name.trim()) {
-            alert('Please fill input');
-            return;
-        }
-
-        onAddVideo(src, name);
+const Form: FC<Props> = ({ onClose }) => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+    setValue,
+    watch,
+    clearErrors,
+  } = useForm<IFormInput>({
+    mode: 'onBlur',
+    defaultValues: {
+      type: 'video'
     }
+  });
 
-    return (
-        // Добавляем обработчик onSubmit
-        <form className="form-add" onSubmit={handleSubmit}>
-            <div className="head-form">
-                <h3 className="contenx">Add new article:</h3>
-                <button type="button" className="close-btn" onClick={onClose}><CloseIcon/></button>
-            </div>
-            <div className="form-group">
-                <Input
-                    id="src"
-                    type="url"
-                    placeholder="URL изображения"
-                    value={src}
-                    onChange={(e) => setSrc(e.target.value)}
-                />
-                <Input
-                    id="name"
-                    type="text"
-                    placeholder="Название"
-                    value={name} // Привязываем значение к состоянию
-                    onChange={(e) => setName(e.target.value)}
-                />
-                <button type="submit" className="save"><SaveIcon/></button>
-            </div>
-        </form>
-    );
-}
+  const srcValue = watch('src');
+  const titleValue = watch('title');
+  const typeValue = watch('type');
+
+  const onSubmit: SubmitHandler<IFormInput> = async data => {
+    try {
+      const newPost = await postApi.createPost({
+        title: data.title,
+        type: data.type,
+        description: data.type === 'text' ? (data.content || '') : (data.description || ''),
+        src: data.src || '',
+        content: data.type === 'text' ? (data.content || '') : undefined,
+      });
+
+      reset();
+      onClose();
+    } catch (error) {
+      console.error('Error creating post:', error);
+    }
+  };
+
+  const validateUrl = (value: string | undefined) => {
+    if (!value) return true;
+    try {
+      new URL(value);
+      return true;
+    } catch {
+      return 'Please enter a valid URL';
+    }
+  };
+
+  const validateSrcForType = (type: string, src: string | undefined) => {
+    if ((type === 'video' || type === 'image') && !src) {
+      return 'Source URL is required for video and image posts';
+    }
+    return true;
+  };
+
+  const validateContentForType = (type: string, content: string | undefined) => {
+    if (type === 'text' && !content) {
+      return 'Content is required for text posts';
+    }
+    return true;
+  };
+
+  const clearSrc = () => {
+    setValue('src', '');
+    clearErrors('src');
+  };
+
+  const clearTitle = () => {
+    setValue('title', '');
+    clearErrors('title');
+  };
+
+  return (
+    <form className={classes.formadd} onSubmit={handleSubmit(onSubmit)}>
+      <div className={classes.headform}>
+        <h3 className={classes.contenttitle}>Add new post</h3>
+        <button type='button' className={classes.closebtn} onClick={onClose}>
+          <CloseIcon />
+        </button>
+      </div>
+      <div className={classes.formgroup}>
+        <div className={classes.inputwrapper}>
+          <select
+            {...register('type', { required: 'Type is required' })}
+            className={classes.select}
+          >
+
+            {postTypes.map((postType) => (
+              <option key={postType.value} value={postType.value}>
+                {postType.label}
+              </option>
+            ))}
+          </select>
+          {errors.type && <span className={classes.error}>{errors.type.message}</span>}
+        </div>
+
+        <div className={classes.inputwrapper}>
+          <Input
+            id='title'
+            type='text'
+            placeholder='Title'
+            rightIcon={titleValue ? <CloseIcon /> : null}
+            onRightIconClick={titleValue ? clearTitle : undefined}
+            error={errors.title?.message}
+            {...register('title', {
+              required: 'Title is required',
+              minLength: { value: 3, message: 'Title must be at least 3 characters long' },
+            })}
+          />
+        </div>
+
+        {typeValue === 'video' || typeValue === 'image' ? (
+          <div className={classes.inputwrapper}>
+            <Input
+              id='src'
+              type='text'
+              placeholder='Source URL'
+              rightIcon={srcValue ? <CloseIcon /> : null}
+              onRightIconClick={srcValue ? clearSrc : undefined}
+              error={errors.src?.message}
+              {...register('src', {
+                required: validateSrcForType(typeValue, srcValue),
+                validate: validateUrl,
+              })}
+            />
+          </div>
+        ) : null}
+
+        {typeValue === 'text' ? (
+          <div className={classes.inputwrapper}>
+            <textarea
+              {...register('content', {
+                required: typeValue === 'text' ? 'Content is required' : false,
+                minLength: { value: 10, message: 'Content must be at least 10 characters' }
+              })}
+              placeholder='Content'
+              rows={3}
+              className={classes.textarea}
+            />
+            {errors.content && <span className={classes.error}>{errors.content.message}</span>}
+          </div>
+        ) : null}
+
+        <div className={classes.inputwrapper}>
+          <textarea
+            {...register('description', {
+              required: 'Description is required',
+              minLength: { value: 10, message: 'Description must be at least 10 characters long' },
+            })}
+            placeholder='Description'
+            rows={3}
+            className={errors.description ? classes.error : ''}
+          />
+          {errors.description && <span className={classes.error}>{errors.description.message}</span>}
+        </div>
+
+        <button type='submit' className={classes.save} disabled={isSubmitting}>
+          <SaveIcon />
+        </button>
+      </div>
+    </form>
+  );
+};
 
 export default Form;

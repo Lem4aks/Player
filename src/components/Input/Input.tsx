@@ -1,61 +1,44 @@
-import React, { FC, InputHTMLAttributes, ReactNode } from "react";
-import './styles.scss';
+import classes from './styles.module.scss';
+import { FC, InputHTMLAttributes, forwardRef, ReactNode } from 'react';
 
-interface Props extends InputHTMLAttributes<HTMLInputElement> {
-    label?: string;
-    error?: string;
-    leftIcon?: ReactNode;
-    rightIcon?: ReactNode;
-    containerClassName?: string;
+interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
+  label?: string;
+  error?: string;
+  rightIcon?: ReactNode;
+  onRightIconClick?: () => void;
 }
 
-const Input: FC<Props> = ({
-                              label,
-                              error,
-                              leftIcon,
-                              rightIcon,
-                              id,
-                              className,
-                              containerClassName,
-                              ...rest
-                          }) => {
-
-    const containerClasses = [
-        'input-container',
-        containerClassName,
-    ].filter(Boolean).join(' ');
-
-    const inputWrapperClasses = [
-        'input-wrapper',
-        leftIcon ? 'has-left-icon' : '',
-        rightIcon ? 'has-right-icon' : '',
-    ].filter(Boolean).join(' ');
-
+const Input: FC<Props> = forwardRef<HTMLInputElement, Props>(
+  ({ label, error, rightIcon, onRightIconClick, className, disabled, ...props }, ref) => {
     const inputClasses = [
-        'custom-input',
-        error ? 'is-error' : '',
-        className,
-    ].filter(Boolean).join(' ');
+      classes.input,
+      error && classes.error,
+      disabled && classes.disabled,
+      rightIcon && classes.hasRightIcon,
+      className,
+    ]
+      .filter(Boolean)
+      .join(' ');
 
     return (
-        <div className={containerClasses}>
-            {label && <label htmlFor={id} className="input-label">{label}</label>}
+      <div className={classes.inputWrapper}>
+        {label && <label className={classes.label}>{label}</label>}
 
-            <div className={inputWrapperClasses}>
-                {leftIcon && <span className="icon left-icon">{leftIcon}</span>}
+        <div className={classes.inputContainer}>
+          <input ref={ref} className={inputClasses} disabled={disabled} {...props} />
 
-                <input
-                    id={id}
-                    className={inputClasses}
-                    {...rest}
-                />
-
-                {rightIcon && <span className="icon right-icon">{rightIcon}</span>}
+          {rightIcon && (
+            <div className={classes.rightIcon} onClick={onRightIconClick}>
+              {rightIcon}
             </div>
-
-            {error && <p className="error-message">{error}</p>}
+          )}
         </div>
+        <div className={classes.errorText}>{error || ''}</div>
+      </div>
     );
-}
+  }
+);
+
+Input.displayName = 'Input';
 
 export default Input;

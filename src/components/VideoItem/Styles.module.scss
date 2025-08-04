@@ -1,0 +1,56 @@
+.videoItem {
+  text-align: center;
+  margin-bottom: 20px;
+
+  &:last-child {
+    padding-bottom: 12px;
+  }
+
+}
+
+.title {
+  color: white;
+  margin: 0 0 10px 0;
+  font-weight: bold;
+}
+.description {  
+  color: #ccc;
+}
+
+.videoContainer {
+  position: relative;
+  width: 100%;
+
+  .inlineController {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    border-radius: 0 0 8px 8px;
+    z-index: 10;
+  }
+
+  &:hover .inlineController {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+.video {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  border-radius: 8px;
+  background-color: black;
+  cursor: pointer;
+}
+
+.author {
+  color: #ccc;
+  font-weight: 500;
+}

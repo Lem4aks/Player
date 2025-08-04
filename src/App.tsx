@@ -1,173 +1,101 @@
-import {Footer, Form, Header, Header_video} from "./components";
-import React, { useRef, useState, useEffect } from 'react';
+import { Header, Modal, VideoItem, TextItem, ImageItem } from './components';
+import { useState, useEffect } from 'react';
 import './App.scss';
-
-
-interface Video {
-    id: number;
-    src: string;
-    title: string;
-}
-
-const LOCAL_STORAGE_KEY = 'VideoList';
-
-const DEFAULT_VIDEO_DATA: Video[] = [
-    { id: 1, src: 'https://www.w3schools.com/html/mov_bbb.mp4', title: 'Bunny' },
-    { id: 2, src: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4', title: 'Flower' },
-    { id: 3, src: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4', title: 'Joyrides' }
-];
+import { PostData } from './Types';
+import { postApi } from './api/postApi';
 
 function App() {
-    const [isFormVisible, setIsFormVisible] = useState(false);
-    const [videoData, setVideoData] = useState<Video[]>([]);
-    const [searchQuery, setSearchQuery] = useState('');
+  const [isFormVisible, setIsFormVisible] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [posts, setPosts] = useState<PostData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    const appRef = useRef<HTMLDivElement>(null);
-    const videoRefs = useRef<{ [key: number]: HTMLVideoElement }>({});
-    const activeVideoRef = useRef<HTMLVideoElement | null>(null);
+  const handleAddClick = () => {
+    setIsFormVisible(true);
+  };
 
-    const [selectedVideoId, setSelectedVideoId] = useState<number | null>(null);
-    const [isFullscreen, setIsFullscreen] = useState(false);
-    
+  const handleCloseForm = () => {
+    setIsFormVisible(false);
+  };
 
-    useEffect(() => {
-        try {
-            const storedVideos = localStorage.getItem(LOCAL_STORAGE_KEY);
-            if (storedVideos) {
-                setVideoData(JSON.parse(storedVideos));
-            } else {
-                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(DEFAULT_VIDEO_DATA));
-                setVideoData(DEFAULT_VIDEO_DATA);
-            }
-        } catch (error) {
-            console.error("Failed:", error);
-            setVideoData(DEFAULT_VIDEO_DATA);
-        }
-    }, []);
-
-    const handleAddClick = () => {
-        setIsFormVisible(true);
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        setLoading(true);
+        const response = await postApi.getAllPosts(1, 50);
+        setPosts(response.posts || response);
+        setError(null);
+      } catch (err) {
+        setError('Failed to load posts. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
     };
 
-    const handleCloseForm = () => {
-        setIsFormVisible(false);
-    };
+    fetchPosts();
+  }, []);
 
-    const handleAddVideo = (src: string, title: string) => {
-        const newVideo: Video = {
-            id: Date.now(),
-            src,
-            title
-        };
-        const updatedVideos = [...videoData, newVideo];
-        setVideoData(updatedVideos);
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedVideos));
-        handleCloseForm();
-    };
-
-
-    useEffect(() => {
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                handleCloseForm();
-            }
-        };
-
-        if (isFormVisible) {
-            document.addEventListener('keydown', handleKeyDown);
-        }
-
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [isFormVisible]);
-
-
-    const toggleFullscreen = () => {
-        if (!appRef.current) return;
-        if (document.fullscreenElement) {
-            document.exitFullscreen();
-        } else {
-            appRef.current.requestFullscreen();
-        }
-    };
-
-    const handleVideoClick = (videoId: number) => {
-        const videoElement = videoRefs.current[videoId];
-        if (!videoElement) return;
-        setSelectedVideoId(videoId);
-        activeVideoRef.current = videoElement;
-        toggleFullscreen();
-    };
-
-    useEffect(() => {
-        const handleFullscreenChange = () => {
-            const isCurrentlyFullscreen = !!document.fullscreenElement;
-            setIsFullscreen(isCurrentlyFullscreen);
-
-            if (isCurrentlyFullscreen) {
-                activeVideoRef.current?.play();
-            } else {
-                activeVideoRef.current?.pause();
-                setSelectedVideoId(null);
-                activeVideoRef.current = null;
-            }
-        };
-
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-    }, []);
-
-    const filteredVideos = videoData.filter(video =>
-        video.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    const activeVideo = videoData.find(video => video.id === selectedVideoId);
-
-    return (
-        <div ref={appRef} className={`App ${isFullscreen ? 'video-is-fullscreen' : ''}`}>
-
-            {isFullscreen && activeVideo && (
-                <Header_video title={activeVideo.title} />
+  return (
+    <div className='App'>
+      <Modal isVisible={isFormVisible} onClose={handleCloseForm} />
+      <Header
+        onAddClick={handleAddClick}
+        searchTerm={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
+      <main className='main'>
+        {loading && <div className='loading'>Loading posts...</div>}
+        {error && <div className='error'>{error}</div>}
+        {!loading && !error && (
+          <div className='post-list'>
+            {posts
+              .filter(post => 
+                post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                post.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                post.content?.toLowerCase().includes(searchQuery.toLowerCase())
+              )
+              .map(post => {
+                switch (post.type) {
+                  case 'video':
+                    return (
+                      <VideoItem
+                        key={post._id}
+                        id={post._id}
+                        src={post.src || ''}
+                        title={post.title}
+                        description={post.description}
+                        onVideoClick={() => {}}
+                      />
+                    );
+                  case 'text':
+                    return <TextItem key={post._id} id={post._id} title={post.title} content={post.content || ''} />;
+                  case 'image':
+                    return (
+                      <ImageItem
+                        key={post._id}
+                        id={post._id}
+                        title={post.title}
+                        description={post.description || ''}
+                        src={post.src || ''}
+                      />
+                    );
+                  default:
+                    return null;
+                }
+              })}
+            {posts.filter(post => 
+              post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              post.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              post.content?.toLowerCase().includes(searchQuery.toLowerCase())
+            ).length === 0 && searchQuery && (
+              <div className='no-results'>No posts found matching "{searchQuery}"</div>
             )}
-
-            {isFormVisible && (
-                <>
-                    <div className="form-overlay" onClick={handleCloseForm}></div>
-                    <Form onClose={handleCloseForm} onAddVideo={handleAddVideo} />
-                </>
-            )}
-
-            <Header
-                onAddClick={handleAddClick}
-                searchTerm={searchQuery}
-                onSearchChange={setSearchQuery}
-            />
-            <main className="main">
-                <div className="video-list">
-                    {filteredVideos.map(video => (
-                        <div key={video.id} className={`video-item ${selectedVideoId === video.id ? 'is-active' : ''}`}>
-                            <p>{video.title}</p>
-                            <video
-                                ref={el => {
-                                    if (el) videoRefs.current[video.id] = el;
-                                }}
-                                src={video.src}
-                                onClick={() => handleVideoClick(video.id)}
-                                muted
-                                loop
-                            />
-                        </div>
-                    ))}
-                </div>
-            </main>
-            <Footer
-                videoRef={activeVideoRef}
-                isFullscreen={isFullscreen}
-                toggleFullscreen={toggleFullscreen}
-            />
-        </div>
-    );
+          </div>
+        )}
+      </main>
+    </div>
+  );
 }
 
 export default App;

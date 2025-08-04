@@ -5,6 +5,27 @@
     width: 100vw;
 }
 
+.userSection {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #1ed760;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    border: 1px solid #333;
+}
+
 .add {
     border: none;
     width: 48px;

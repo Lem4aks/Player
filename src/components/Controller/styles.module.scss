@@ -1,7 +1,79 @@
-.footer {
+.controller {
+  color: white;
   display: flex;
   justify-content: space-between;
   gap: 20px;
+
+  &.inline {
+    gap: 16px;
+    padding: 15px 20px;
+
+    .left {
+      min-width: 60px;
+      width: 80px;
+      padding: 0;
+      gap: 12px;
+    }
+
+    .center {
+      flex-grow: 3;
+    }
+
+    .right {
+      padding-right: 0;
+      gap: 12px;
+    }
+
+    .player {
+      gap: 15px;
+      margin-bottom: 10px;
+    }
+
+    .timer {
+      padding: 8px 0;
+      gap: 12px;
+
+      p {
+        font-size: 15px;
+        margin: 0;
+        min-width: 50px;
+        font-weight: 500;
+      }
+    }
+
+    .timelaps {
+      height: 6px;
+    }
+
+    .stdbutton {
+      width: 44px;
+      height: 44px;
+      min-width: 44px;
+
+      svg {
+        width: 22px;
+        height: 22px;
+      }
+    }
+
+    .playandstop {
+      width: 52px;
+      height: 52px;
+
+      svg {
+        width: 26px;
+        height: 26px;
+      }
+    }
+
+    .played {
+      height: 6px;
+    }
+
+    .current {
+      top: -1px;
+    }
+  }
 }
 
 .timer {
@@ -99,7 +171,9 @@
   width: 48px;
   border-radius: 40px;
   border: none;
-  transition: transform 0.4s ease, background-color 0.4s ease;
+  transition:
+    transform 0.4s ease,
+    background-color 0.4s ease;
 
   &:hover {
     background-color: #37d46f;
