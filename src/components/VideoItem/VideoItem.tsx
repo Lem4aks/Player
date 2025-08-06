@@ -96,7 +96,7 @@ const VideoItem: FC<Props> = ({
   return (
     <div 
       ref={elementRef}
-      className={`${classes.videoItem}`}
+      className={`${classes.videoItem} ${isFullscreen ? classes.fullscreen : ''}`}
     >
       {!isFullscreen && (
         <>
@@ -112,7 +112,7 @@ const VideoItem: FC<Props> = ({
           onClick={handleVideoClick}
           muted
           loop
-          className={classes.video}
+          className={`${classes.video} ${isFullscreen ? classes.fullscreen : ''}`}
         />
         <div className={classes.inlineController}>
           <Controller
@@ -123,7 +123,6 @@ const VideoItem: FC<Props> = ({
           />
         </div>
       </div>
-
     </div>
   );
 };
