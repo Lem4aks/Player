@@ -14,7 +14,6 @@ const Post = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [postData, setPostData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
   const [liking, setLiking] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
   const [viewsCount, setViewsCount] = useState(0);
@@ -41,7 +40,6 @@ const Post = () => {
 
   const fetchPostData = async () => {
     try {
-      setLoading(true);
       const response = await postApi.getPostById(String(postId));
 
       const post = response.post || response;
@@ -86,8 +84,6 @@ const Post = () => {
       }
     } catch (error) {
       console.error("Error fetching post:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -168,7 +164,7 @@ const Post = () => {
           <PostItem
             id={postData._id}
             type={postData.type}
-            onVideoClick={(videoId, videoElement) => toggleFullscreen()}
+            onVideoClick={() => toggleFullscreen()}
             videoRef={videoRef as RefObject<HTMLVideoElement>}
             isFullscreen={isFullscreen}
             showFullscreenControls={true}
