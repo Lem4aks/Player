@@ -78,12 +78,6 @@ function App() {
     }
   };
 
-  const refreshPosts = useCallback(async () => {
-    setPage(1);
-    setHasMore(true);
-    await fetchPosts(false);
-  }, []);
-
   const loadMorePosts = useCallback(async () => {
     if (hasMore && !isLoadingMore && !loading) {
       await fetchPosts(true);
