@@ -7,8 +7,8 @@ export interface PostData {
   content?: string;
   src?: string;
   comments?: Comment[];
-  like?: number;
-  views?: number;
+  likes?: string[];
+  views?: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -19,7 +19,7 @@ export interface Comment {
   postId?: string;
   parentCommentId?: string;
   content: string;
-  like: number;
+  likes: string[];
   createdAt: string;
   updatedAt: string;
 }

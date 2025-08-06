@@ -1,7 +1,7 @@
 .formadd {
   z-index: 1000;
   width: 520px;
-  height: 420px;
+  height: 560px;
   background: linear-gradient(#323232, #111111);
   border-radius: 20px;
   position: absolute;
@@ -41,6 +41,39 @@
   padding: 20px;
   flex: 1;
   position: relative;
+}
+
+.textarea{
+  background-color: #ffffff1a;
+  border-radius: 8px;
+  border: 1px solid #33333366;
+  color: white;
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 100px;
+  padding: 12px;
+  font-family: inherit;
+  font-size: 16px;
+}
+
+.select{
+  background-color: #ffffff1a;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #33333366;
+  color: white;
+  padding: 4px 8px;
+
+  &::before{
+    background-color: #ffffff1a;
+    color: white;
+  }
+
+  &::after{
+    background-color: #ffffff1a;
+    color: white;
+  }
 }
 
 .inputwrapper {

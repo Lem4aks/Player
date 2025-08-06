@@ -2,9 +2,14 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.REACT_APP_URL_BACK;
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 export const commentApi = {
-  getCommentsByPostId: async (postId: string) => {
-    const response = await axios.get(`${API_BASE_URL}/api/comments/post/${postId}`);
+  getCommentsByPostId: async (postId: string, page: number = 1, limit: number = 10) => {
+    const response = await axios.get(`${API_BASE_URL}/api/comments/post/${postId}?page=${page}&limit=${limit}`);
     return response.data;
   },
 
@@ -18,51 +23,31 @@ export const commentApi = {
     return response.data;
   },
 
-  createComment: async (commentData: {
-    content: string;
-    postId?: string;
-    parentCommentId?: string;
-  }) => {
-    const token = localStorage.getItem('token');
-    const response = await axios.post(`${API_BASE_URL}/api/comments`, commentData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+  createComment: async (data: { content: string; postId?: string; parentCommentId?: string }) => {
+    const response = await axios.post(`${API_BASE_URL}/api/comments`, data, {
+      headers: getAuthHeaders()
     });
     return response.data;
   },
 
-  updateComment: async (commentId: string, commentData: { content: string }) => {
-    const token = localStorage.getItem('token');
-    const response = await axios.put(`${API_BASE_URL}/api/comments/${commentId}`, commentData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+  updateComment: async (commentId: string, data: { content: string }) => {
+    const response = await axios.put(`${API_BASE_URL}/api/comments/${commentId}`, data, {
+      headers: getAuthHeaders()
     });
     return response.data;
   },
 
   deleteComment: async (commentId: string) => {
-    const token = localStorage.getItem('token');
     const response = await axios.delete(`${API_BASE_URL}/api/comments/${commentId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: getAuthHeaders()
     });
     return response.data;
   },
 
-  likeComment: async (commentId: string, increment: boolean) => {
-    const token = localStorage.getItem('token');
-    const response = await axios.patch(
-      `${API_BASE_URL}/api/comments/${commentId}/like`,
-      { increment },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+  likeComment: async (commentId: string, data: { isLiking: boolean }) => {
+    const response = await axios.patch(`${API_BASE_URL}/api/comments/${commentId}/like`, data, {
+      headers: getAuthHeaders()
+    });
     return response.data;
   },
 };

@@ -4,6 +4,7 @@ import { FC } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { Input } from '../Input';
 import { postApi } from '../../api';
+import { Select } from '../Select';
 
 interface Props {
   onClose: () => void;
@@ -104,17 +105,12 @@ const Form: FC<Props> = ({ onClose }) => {
       </div>
       <div className={classes.formgroup}>
         <div className={classes.inputwrapper}>
-          <select
-            {...register('type', { required: 'Type is required' })}
-            className={classes.select}
-          >
-
-            {postTypes.map((postType) => (
-              <option key={postType.value} value={postType.value}>
-                {postType.label}
-              </option>
-            ))}
-          </select>
+          <Select
+            options={postTypes}
+            value={typeValue}
+            onChange={(value) => setValue('type', value as 'video' | 'image' | 'text', { shouldValidate: true })}
+            placeholder="Select post type"
+          />
           {errors.type && <span className={classes.error}>{errors.type.message}</span>}
         </div>
 
@@ -154,7 +150,7 @@ const Form: FC<Props> = ({ onClose }) => {
           <div className={classes.inputwrapper}>
             <textarea
               {...register('content', {
-                required: typeValue === 'text' ? 'Content is required' : false,
+                required: typeValue === 'text' ? 'Content is required' : true,
                 minLength: { value: 10, message: 'Content must be at least 10 characters' }
               })}
               placeholder='Content'
@@ -168,12 +164,12 @@ const Form: FC<Props> = ({ onClose }) => {
         <div className={classes.inputwrapper}>
           <textarea
             {...register('description', {
-              required: 'Description is required',
+              required: false,
               minLength: { value: 10, message: 'Description must be at least 10 characters long' },
             })}
             placeholder='Description'
             rows={3}
-            className={errors.description ? classes.error : ''}
+            className={classes.textarea}
           />
           {errors.description && <span className={classes.error}>{errors.description.message}</span>}
         </div>

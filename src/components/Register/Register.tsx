@@ -123,7 +123,7 @@ const Register: FC = () => {
             />
           </div>
 
-          <button type='submit' className={classes.submitBtn}></button>
+          <button type='submit' className={classes.submitBtn}>Register</button>
         </form>
 
         <p>

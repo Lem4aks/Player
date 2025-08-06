@@ -2,6 +2,11 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.REACT_APP_URL_BACK;
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 export const userApi = {
   login: async (credentials: { email: string; password: string }) => {
     const response = await axios.post(`${API_BASE_URL}/api/users/login`, credentials);
@@ -14,15 +19,8 @@ export const userApi = {
   },
 
   getProfile: async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      throw new Error('No token found');
-    }
-    
     const response = await axios.get(`${API_BASE_URL}/api/users/profile`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: getAuthHeaders()
     });
     return response.data;
   },
@@ -38,30 +36,16 @@ export const userApi = {
   },
 
   updateProfile: async (updateData: { name?: string; email?: string }) => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      throw new Error('No token found');
-    }
-    
     const response = await axios.put(`${API_BASE_URL}/api/users/profile`, updateData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: getAuthHeaders()
     });
     return response.data;
   },
 
   deleteProfile: async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      throw new Error('No token found');
-    }
-    
     const response = await axios.delete(`${API_BASE_URL}/api/users/profile`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+      headers: getAuthHeaders()
+      });
     return response.data;
   },
 };

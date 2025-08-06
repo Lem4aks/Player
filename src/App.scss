@@ -1,7 +1,7 @@
 html,
 body,
 #root {
-  height: 100vh;
+  height: 100%;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -11,15 +11,17 @@ body,
   background-color: black;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
   overflow: hidden;
+}
 
 .main {
   flex: 1;
   display: flex;
-  gap: 12px;
+  flex-direction: column;
   padding: 12px;
   overflow-y: auto;
+  height: calc(100vh - 60px);
 }
 
 .post-list {
@@ -27,6 +29,19 @@ body,
   border-radius: 24px;
   background: linear-gradient(#222222, #121212);
   padding: 20px;
+  display: flex;
+  flex-direction: column;
   gap: 20px;
+  min-height: 100%;
 }
+
+.post-item {
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.main-container {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }

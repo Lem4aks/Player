@@ -1,11 +1,11 @@
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useRef, useState, useEffect, RefObject } from 'react';
-import classes from './styles.module.scss';
-import { VideoItem } from '../VideoItem';
-import { postApi } from '../../api';
-import { TextItem } from '../TextItem';
-import { ImageItem } from '../ImageItem';
-import Comments from '../Comments/Comments';
+import { useLocation, useNavigate } from "react-router-dom";
+import { useRef, useState, useEffect, RefObject } from "react";
+import classes from "./styles.module.scss";
+import { PostItem } from "../PostItem";
+import { postApi } from "../../api";
+import Comments from "../Comments/Comments";
+import LikeIcon from "../../assets/svg/LikeIcon";
+import Loading from "../Loading/Loading";
 
 const Post = () => {
   const location = useLocation();
@@ -14,7 +14,11 @@ const Post = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [postData, setPostData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [liking, setLiking] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
+  const [viewsCount, setViewsCount] = useState(0);
+  const [hasLiked, setHasLiked] = useState(false);
 
   useEffect(() => {
     if (postId) {
@@ -28,48 +32,79 @@ const Post = () => {
       setIsFullscreen(isCurrentlyFullscreen);
     };
 
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
 
     return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
     };
   }, []);
 
   const fetchPostData = async () => {
     try {
+      setLoading(true);
       const response = await postApi.getPostById(String(postId));
 
       const post = response.post || response;
+      const userInteraction = response.userInteraction;
+      const counts = response.counts;
 
       setPostData(post);
+
+      if (counts) {
+        setLikesCount(counts.likes || 0);
+        setViewsCount(counts.views || 0);
+      } else if (post) {
+        setLikesCount(post.likes?.length || 0);
+        setViewsCount(post.views?.length || 0);
+      }
+
+      const getUserIdFromToken = () => {
+        const token = localStorage.getItem("token");
+        if (!token) return null;
+
+        try {
+          const payload = JSON.parse(atob(token.split(".")[1]));
+          return payload.userId;
+        } catch (error) {
+          console.error("Error decoding token:", error);
+          return null;
+        }
+      };
+
+      const currentUserId =
+        localStorage.getItem("userId") ||
+        localStorage.getItem("user_id") ||
+        getUserIdFromToken();
+
+      if (userInteraction && userInteraction.hasLiked !== undefined) {
+        setHasLiked(userInteraction.hasLiked);
+      } else if (post && post.likes && currentUserId) {
+        const isLiked = post.likes.includes(currentUserId);
+        setHasLiked(isLiked);
+      } else {
+        setHasLiked(false);
+      }
     } catch (error) {
-      console.error('Error fetching post:', error);
+      console.error("Error fetching post:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleBack = () => {
-    navigate('/');
+    navigate("/");
   };
 
   const toggleFullscreen = () => {
-    if (!videoRef.current) return;
+    const videoContainer = document.querySelector(`.${classes.videoContainer}`);
+    if (!videoContainer) return;
 
     if (!isFullscreen) {
-      videoRef.current.requestFullscreen().catch(console.error);
+      videoContainer.requestFullscreen().catch(console.error);
     } else {
       document.exitFullscreen().catch(console.error);
     }
     setIsFullscreen(!isFullscreen);
-  };
-
-  const handleVideoClick = () => {
-    if (!videoRef.current) return;
-
-    if (videoRef.current.paused) {
-      videoRef.current.play().catch(console.error);
-    } else {
-      videoRef.current.pause();
-    }
   };
 
   const handleLike = async () => {
@@ -77,27 +112,48 @@ const Post = () => {
 
     try {
       setLiking(true);
-      const response = await postApi.likePost(postData._id, true);
 
-      const updatedPost = response.post || response;
-      setPostData(updatedPost);
+      const isLiking = !hasLiked;
+
+      const response = await postApi.likePost(postData._id, isLiking);
+
+      if (response.likesCount !== undefined) {
+        setLikesCount(response.likesCount);
+      }
+
+      if (response.hasLiked !== undefined) {
+        setHasLiked(response.hasLiked);
+      }
+
+      if (response.post) {
+        const updatedPost = {
+          ...response.post,
+          userId: postData.userId,
+          comments: postData.comments,
+        };
+        setPostData(updatedPost);
+      }
     } catch (error) {
-      console.error('Error liking post:', error);
+      console.error("Error liking post:", error);
     } finally {
       setLiking(false);
     }
   };
 
-  if (!postId || !postData) {
-    return <div className={classes.container}>Post not found</div>;
-  }
-
   const getAuthorName = () => {
     if (postData.userId) {
-      return postData.userId.username || postData.userId.name || 'Unknown';
+      if (typeof postData.userId === "object") {
+        return postData.userId.username || postData.userId.name || "Unknown";
+      } else {
+        return "Unknown";
+      }
     }
-    return 'Unknown';
+    return "Unknown";
   };
+
+  if (!postId || !postData) {
+    return <Loading />;
+  }
 
   return (
     <div className={classes.container}>
@@ -106,33 +162,17 @@ const Post = () => {
           ← Back
         </button>
 
-        <div className={`${classes.videoContainer} ${isFullscreen ? classes.fullscreen : ''}`}>
-          {postData.type === 'video' && (
-            <VideoItem
-              id={postData._id}
-              src={postData.src || ''}
-              title={postData.title}
-              description={postData.description || ''}
-              username={postData.userId?.username || 'Unknown'}
-              onVideoClick={(videoId, videoElement) => toggleFullscreen()}
-              videoRef={videoRef as RefObject<HTMLVideoElement>}
-              isFullscreen={isFullscreen}
-              showFullscreenControls={true}
-            />
-          )}
-
-          {postData.type === 'image' && (
-            <ImageItem
-              id={postData._id}
-              src={postData.src || ''}
-              title={postData.title}
-              description={postData.description || ''}
-            />
-          )}
-
-          {postData.type === 'text' && (
-            <TextItem id={postData._id} title={postData.title} content={postData.content || ''} />
-          )}
+        <div
+          className={`${classes.videoContainer} ${isFullscreen ? classes.fullscreen : ""}`}
+        >
+          <PostItem
+            id={postData._id}
+            type={postData.type}
+            onVideoClick={(videoId, videoElement) => toggleFullscreen()}
+            videoRef={videoRef as RefObject<HTMLVideoElement>}
+            isFullscreen={isFullscreen}
+            showFullscreenControls={true}
+          />
         </div>
 
         <h1 className={classes.title}>{postData.title}</h1>
@@ -142,10 +182,14 @@ const Post = () => {
         </div>
 
         <div className={classes.stats}>
-          <span>{postData.views || 0} views</span>
-          <span>{postData.like || 0} likes</span>
-          <button className={classes.likeButton} onClick={handleLike} disabled={liking}>
-            {liking ? 'Like...' : 'Like'}
+          <span>{viewsCount} views</span>
+          <span>{likesCount} likes</span>
+          <button
+            className={`${classes.likeButton} ${hasLiked ? classes.liked : ""}`}
+            onClick={handleLike}
+            disabled={liking}
+          >
+            <LikeIcon />
           </button>
         </div>
 

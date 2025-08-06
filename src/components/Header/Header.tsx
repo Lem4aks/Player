@@ -1,6 +1,6 @@
 import { FC, useEffect } from 'react';
 import classes from './styles.module.scss';
-import { AddIcon } from '../../assets/svg';
+import { AddIcon, ExitIcon } from '../../assets/svg';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { getProfile, logout } from '../../store/auth';
 
@@ -33,7 +33,7 @@ const Header: FC<Props> = ({ onAddClick, searchTerm, onSearchChange }) => {
             {(user?.username || 'U').charAt(0).toUpperCase()}
           </div>
           <button className={classes.logoutBtn} onClick={handleLogout}>
-            Logout
+            <ExitIcon />
           </button>
         </div>
       );

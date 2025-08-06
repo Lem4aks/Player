@@ -9,3 +9,5 @@ export { default as ExitFullscreenIcon } from './ExitFullscreenIcon';
 export { default as AddIcon } from './AddIcon';
 export { default as SaveIcon } from './SaveIcon';
 export { default as CloseIcon } from './CloseIcon';
+export { default as ExitIcon } from './ExitIcon';
+export { default as ArrowIcon } from './ArrowIcon';

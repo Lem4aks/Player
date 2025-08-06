@@ -30,6 +30,7 @@ const Controller: FC<Props> = ({ videoRef, isFullscreen, toggleFullscreen, isInl
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
 
   const [isSeeking, setIsSeeking] = useState(false);
   const [isAdjustingVolume, setIsAdjustingVolume] = useState(false);
@@ -247,10 +248,29 @@ const Controller: FC<Props> = ({ videoRef, isFullscreen, toggleFullscreen, isInl
     toggleFullscreen();
   };
 
+  const shouldShowController = () => {
+    if (!isFullscreen) return true;
+    return !isPlaying || isHovered;
+  };
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+  };
+
   return (
     <div
-      className={`${classes.controller} ${isInline ? classes.inline : ''}`}
+      className={`${classes.controller} ${isInline ? classes.inline : ''} ${shouldShowController() ? '' : classes.hidden}`}
       onClick={e => e.stopPropagation()}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        opacity: shouldShowController() ? 1 : 0,
+        transition: 'opacity 0.3s ease'
+      }}
     >
       <div className={classes.left}>
         <button className={classes.stdbutton} onClick={toggleMute}>

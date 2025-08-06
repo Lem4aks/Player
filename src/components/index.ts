@@ -13,4 +13,6 @@ export * from './ImageItem';
 export * from './CommentItem';
 export * from './Comments';
 export * from './Loading';
+export * from './PostItem';
+export * from './Select';
 

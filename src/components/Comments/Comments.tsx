@@ -23,21 +23,14 @@ const Comments: FC<Props> = ({ comments, postId, onCommentsUpdate }) => {
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
 
   const handleLikeComment = async (commentId: string) => {
-    try {
-      await commentApi.likeComment(commentId, true);
-      onCommentsUpdate();
-      Object.keys(loadedReplies).forEach(parentId => {
-        const replies = loadedReplies[parentId];
-        const updatedReplies = replies.map(reply =>
-          reply._id === commentId ? { ...reply, like: (reply.like || 0) + 1 } : reply
-        );
-        if (updatedReplies !== replies) {
-          setLoadedReplies(prev => ({ ...prev, [parentId]: updatedReplies }));
-        }
-      });
-    } catch (error) {
-      console.error('Error liking comment:', error);
-    }
+    onCommentsUpdate();
+    
+    Object.keys(loadedReplies).forEach(parentId => {
+      const replies = loadedReplies[parentId];
+      if (replies.some(reply => reply._id === commentId)) {
+        onCommentsUpdate();
+      }
+    });
   };
 
   const handleReply = (commentId: string, authorName?: string) => {
