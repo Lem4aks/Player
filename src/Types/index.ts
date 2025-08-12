@@ -1,1 +1,1 @@
-export type { PostData, User, AuthState } from './Video';
+export type { PostData, User, AuthState, Comment, CommentsState, PostsState } from './Video';

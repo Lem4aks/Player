@@ -1,4 +1,4 @@
-import { ChangeEvent, FC, FormEvent, useState } from 'react';
+import { ChangeEvent, FC, FormEvent, useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import classes from './styles.module.scss';
@@ -8,12 +8,18 @@ import { Input } from '../Input';
 const Login: FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { isLoading, error } = useAppSelector(state => state.auth);
+  const { error, isAuthenticated } = useAppSelector(state => state.auth);
 
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/');
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -69,8 +75,8 @@ const Login: FC = () => {
             />
           </div>
 
-          <button type='submit' disabled={isLoading} className={classes.submitBtn}>
-            {isLoading ? 'Signing In...' : 'Sign In'}
+          <button type='submit' className={classes.submitBtn}>
+            Sign In
           </button>
         </form>
 

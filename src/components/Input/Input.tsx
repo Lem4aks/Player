@@ -1,4 +1,4 @@
-import classes from './styles.module.scss';
+    import classes from './styles.module.scss';
 import { FC, InputHTMLAttributes, forwardRef, ReactNode } from 'react';
 
 interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {

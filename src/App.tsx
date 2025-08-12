@@ -1,19 +1,31 @@
 import { Header, Modal, PostItem } from "./components";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useAppDispatch, useAppSelector } from './hooks/redux';
+import { checkAuthStatus } from './store/auth';
+import { 
+  fetchAllPosts, 
+  incrementPostViews,
+  setSearchQuery,
+  selectFilteredPosts,
+  selectPostsPagination,
+  selectSearchQuery
+} from './store/post';
 import "./App.scss";
-import { postApi } from "./api/postApi";
-import { ViewService } from "./services/views";
 import { PostData } from "./Types/Video";
 
 function App() {
+  const dispatch = useAppDispatch();
+
   const [isFormVisible, setIsFormVisible] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [posts, setPosts] = useState<PostData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [page, setPage] = useState(1);
+  
+  const posts = useAppSelector(selectFilteredPosts) as PostData[];
+  const pagination = useAppSelector(selectPostsPagination);
+  const searchQuery = useAppSelector(selectSearchQuery) as string;
+
+  useEffect(() => {
+    dispatch(fetchAllPosts({ page: 1, limit: 2 }));
+  }, [dispatch]);
 
   const handleAddClick = () => {
     setIsFormVisible(true);
@@ -24,135 +36,154 @@ function App() {
   };
 
   const handlePostView = useCallback(async (postId: string) => {
-    const result = await ViewService.incrementView(postId);
-
-    if (result.viewCount !== undefined) {
-      setPosts((prevPosts) =>
-        prevPosts.map((post) =>
-          post._id === postId
-            ? { ...post, viewsCount: result.viewCount! }
-            : post,
-        ),
-      );
-    }
-  }, []);
-
-  const fetchPosts = async (loadMore = false) => {
     try {
-      if (loadMore) {
-        setIsLoadingMore(true);
-      } else {
-        setLoading(true);
-        setError(null);
-      }
+      const currentPost = posts.find(p => p._id === postId);
+      if (!currentPost) return;
       
-      const currentPage = loadMore ? page : 1;
-      const limit = 2;
-      const response = await postApi.getAllPosts(currentPage, limit);
-      const newPosts = response.posts || response;
+      const newViewCount = (currentPost.counts?.views || 0) + 1;
       
-      const uniquePosts = newPosts.filter((post: PostData) => 
-        !posts.some(existingPost => existingPost._id === post._id)
-      );
-      
-      if (loadMore) {
-        setPosts(prev => [...prev, ...uniquePosts]);
-        setHasMore(uniquePosts.length >= limit);
-        setPage(prev => prev + 1);
-      } else {
-        setPosts(uniquePosts);
-        setPage(2);
-        setHasMore(uniquePosts.length >= limit);
-      }
-      
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message || "Failed to load posts. Please try again later.";
-      setError(errorMessage);
-      console.error('Error fetching posts:', err);
-    } finally {
-      if (loadMore) {
-        setIsLoadingMore(false);
-      } else {
-        setLoading(false);
-      }
+      dispatch(incrementPostViews({ 
+        postId, 
+        viewCount: newViewCount 
+      }));
+    } catch (error) {
+      console.error('Error incrementing views:', error);
     }
-  };
+  }, [dispatch, posts]);
 
   const loadMorePosts = useCallback(async () => {
-    if (hasMore && !isLoadingMore && !loading) {
-      await fetchPosts(true);
+    if (!pagination.hasNextPage || isLoadingMore) {
+      return;
     }
-  }, [hasMore, isLoadingMore, loading]);
+
+    try {
+      setIsLoadingMore(true);
+      await dispatch(fetchAllPosts({ 
+        page: pagination.currentPage + 1, 
+        limit: 2, 
+        loadMore: true 
+      })).unwrap();
+      
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+    } catch (error) {
+      console.error('Error loading more posts:', error);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [dispatch, pagination.hasNextPage, pagination.currentPage, isLoadingMore]);
+
+  const handleSearchChange = (query: string) => {
+    dispatch(setSearchQuery(query));
+  };
 
   useEffect(() => {
-    fetchPosts();
-  }, []);
+    if (!pagination.hasNextPage || isLoadingMore) {
+      return;
+    }
 
-  useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
-        if (entry.isIntersecting && hasMore && !isLoadingMore && !loading) {
+        if (entry.isIntersecting && pagination.hasNextPage && !isLoadingMore) {
           loadMorePosts();
         }
       });
     }, {
-      rootMargin: '150px',
+      rootMargin: '200px',
       threshold: 0.1
     });
 
     const sentinel = document.createElement('div');
-    sentinel.style.height = '1px';
+    sentinel.id = 'scroll-sentinel';
+    sentinel.style.height = '10px';
     sentinel.style.width = '100%';
     
-    setTimeout(() => {
+    const setupSentinel = () => {
       const mainElement = document.querySelector('main');
-      if (mainElement) {
+      const postList = document.querySelector('.post-list');
+      
+      if (mainElement && postList && posts.length > 0) {
+        const existingSentinel = document.getElementById('scroll-sentinel');
+        if (existingSentinel) {
+          existingSentinel.remove();
+        }
+        
         mainElement.appendChild(sentinel);
         observer.observe(sentinel);
+        return true;
       }
-    }, 100);
+      return false;
+    };
+
+    if (!setupSentinel()) {
+      const timer1 = setTimeout(() => {
+        if (!setupSentinel()) {
+          const timer2 = setTimeout(setupSentinel, 500);
+          return () => clearTimeout(timer2);
+        }
+      }, 100);
+      
+      return () => {
+        clearTimeout(timer1);
+        const sentinelElement = document.getElementById('scroll-sentinel');
+        if (sentinelElement) {
+          sentinelElement.remove();
+        }
+        observer.disconnect();
+      };
+    }
 
     return () => {
-      if (sentinel.parentNode) {
-        sentinel.parentNode.removeChild(sentinel);
+      const sentinelElement = document.getElementById('scroll-sentinel');
+      if (sentinelElement) {
+        sentinelElement.remove();
       }
       observer.disconnect();
     };
-  }, [hasMore, isLoadingMore, loading, loadMorePosts]);
+  }, [pagination.hasNextPage, isLoadingMore, loadMorePosts, posts.length]);
 
-  const filteredPosts = useMemo(() => {
-    if (!searchQuery.trim()) return posts;
-    
-    const query = searchQuery.toLowerCase();
-    return posts.filter((post) =>
-      post.title.toLowerCase().includes(query) ||
-      post.description?.toLowerCase().includes(query) ||
-      post.content?.toLowerCase().includes(query)
-    );
-  }, [posts, searchQuery]);
+  const handlePostCreated = (newPost: PostData) => {
+    setIsFormVisible(false);
+  };
 
   return (
     <div className="App">
       <Modal 
         isVisible={isFormVisible} 
         onClose={handleCloseForm}
+        onPostCreated={handlePostCreated}
       />
       <Header
         onAddClick={handleAddClick}
         searchTerm={searchQuery}
-        onSearchChange={setSearchQuery}
+        onSearchChange={handleSearchChange}
       />
       <main className="main">
-        {!loading && !error && (
+        
+        {posts.length === 0 && (
+          <div className="no-posts">
+            <p>No posts found.</p>
+          </div>
+        )}
+        
+        {posts.length > 0 && (
           <div className="post-list">
-            {filteredPosts.map((post) => (
+            {posts.map((post) => (
               <PostItem
                 key={post._id}
                 id={post._id}
+                postData={post}
                 type={post.type}
                 onView={handlePostView}
               />
             ))}
+          </div>
+        )}
+        
+        
+        {!pagination.hasNextPage && posts.length > 0 && (
+          <div className="end-message">
+            <p>You've reached the end!</p>
           </div>
         )}
       </main>

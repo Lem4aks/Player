@@ -1,5 +1,5 @@
 import classes from "./styles.module.scss";
-import { FC, useState, useEffect } from "react";
+import React, { FC, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useObserver } from "../../hooks/observer";
 import { postApi } from "../../api/postApi";
@@ -11,19 +11,16 @@ interface Props {
 
 const ImageItem: FC<Props> = ({ id, onView }) => {
   const navigate = useNavigate();
-  const [postData, setPostData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [fetchedPostData, setFetchedPostData] = useState<any>(null);
 
   useEffect(() => {
       const fetchPost = async () => {
         try {
           const response = await postApi.getPostById(id);
           const post = response.post;
-          setPostData(post);
-          setLoading(false);
+          setFetchedPostData(post);
         } catch (error) {
           console.error('Error fetching post:', error);
-          setLoading(false);
         }
       };
       
@@ -31,9 +28,9 @@ const ImageItem: FC<Props> = ({ id, onView }) => {
     }, [id]);
 
   const getAuthorName = () => {
-    if (!postData?.userId) return 'Unknown';
-    if (typeof postData.userId === 'object') {
-      return postData.userId.username || postData.userId.name || 'Unknown';
+    if (!fetchedPostData?.userId) return 'Unknown';
+    if (typeof fetchedPostData.userId === 'object') {
+      return fetchedPostData.userId.username || fetchedPostData.userId.name || 'Unknown';
     }
     return 'Unknown';
   };
@@ -50,24 +47,20 @@ const ImageItem: FC<Props> = ({ id, onView }) => {
   );
 
   const handleClick = () => {
-    if (postData) {
+    if (fetchedPostData) {
       navigate("/post", { 
         state: { 
           id, 
-          title: postData.title, 
-          src: postData.src, 
-          description: postData.description 
+          title: fetchedPostData.title, 
+          src: fetchedPostData.src, 
+          description: fetchedPostData.description 
         } 
       });
     }
   };
 
-  if (loading) {
-    return <div className={classes.imageItem}>Loading...</div>;
-  }
-
-  if (!postData) {
-    return <div className={classes.imageItem}>Post not found</div>;
+  if (!fetchedPostData) {
+    return <div>Loading...</div>
   }
 
   return (
@@ -76,10 +69,10 @@ const ImageItem: FC<Props> = ({ id, onView }) => {
       className={classes.imageItem} 
       onClick={handleClick}
     >
-      <h2 className={classes.title}>{postData.title}</h2>
+      <h2 className={classes.title}>{fetchedPostData.title}</h2>
       <span className={classes.author}>By: {getAuthorName()}</span>
-      <img src={postData.src} alt={postData.title} />
-      <p className={classes.description}>{postData.description}</p>
+      <img src={fetchedPostData.src} alt={fetchedPostData.title} />
+      <p className={classes.description}>{fetchedPostData.description}</p>
     </div>
   );
 };

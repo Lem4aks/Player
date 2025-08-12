@@ -1,11 +1,7 @@
 import axios from 'axios';
+import { getAuthHeaders } from './helper';
 
 const API_BASE_URL = process.env.REACT_APP_URL_BACK;
-
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
 
 export const postApi = {
   getAllPosts: async (page: number = 1, limit?: number) => {

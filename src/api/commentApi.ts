@@ -1,25 +1,27 @@
 import axios from 'axios';
+import { getAuthHeaders } from './helper';
 
 const API_BASE_URL = process.env.REACT_APP_URL_BACK;
 
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
-
 export const commentApi = {
   getCommentsByPostId: async (postId: string, page: number = 1, limit: number = 10) => {
-    const response = await axios.get(`${API_BASE_URL}/api/comments/post/${postId}?page=${page}&limit=${limit}`);
+    const response = await axios.get(`${API_BASE_URL}/api/comments/post/${postId}?page=${page}&limit=${limit}`, {
+      headers: getAuthHeaders()
+    });
     return response.data;
   },
 
   getCommentById: async (commentId: string) => {
-    const response = await axios.get(`${API_BASE_URL}/api/comments/${commentId}`);
+    const response = await axios.get(`${API_BASE_URL}/api/comments/${commentId}`, {
+      headers: getAuthHeaders()
+    });
     return response.data;
   },
 
-  getReplies: async (parentCommentId: string) => {
-    const response = await axios.get(`${API_BASE_URL}/api/comments/${parentCommentId}/replies`);
+  getReplies: async (parentCommentId: string, page: number = 1, limit: number = 10) => {
+    const response = await axios.get(`${API_BASE_URL}/api/comments/${parentCommentId}/replies?page=${page}&limit=${limit}`, {
+      headers: getAuthHeaders()
+    });
     return response.data;
   },
 

@@ -1,5 +1,5 @@
 import classes from "./styles.module.scss";
-import { FC, useState, useEffect } from "react";
+import React, { FC, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useObserver } from "../../hooks/observer";
 import { postApi } from "../../api/postApi";
@@ -11,19 +11,16 @@ interface Props {
 
 const TextItem: FC<Props> = ({ id, onView }) => {
   const navigate = useNavigate();
-  const [postData, setPostData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [fetchedPostData, setFetchedPostData] = useState<any>(null);
 
   useEffect(() => {
     const fetchPost = async () => {
       try {
         const response = await postApi.getPostById(id);
         const post = response.post;
-        setPostData(post);
-        setLoading(false);
+        setFetchedPostData(post);
       } catch (error) {
         console.error('Error fetching post:', error);
-        setLoading(false);
       }
     };
     
@@ -31,9 +28,9 @@ const TextItem: FC<Props> = ({ id, onView }) => {
   }, [id]);
 
   const getAuthorName = () => {
-    if (!postData?.userId) return 'Unknown';
-    if (typeof postData.userId === 'object') {
-      return postData.userId.username || postData.userId.name || 'Unknown';
+    if (!fetchedPostData?.userId) return 'Unknown';
+    if (typeof fetchedPostData.userId === 'object') {
+      return fetchedPostData.userId.username || fetchedPostData.userId.name || 'Unknown';
     }
     return 'Unknown';
   };
@@ -50,17 +47,13 @@ const TextItem: FC<Props> = ({ id, onView }) => {
   );
 
   const handleClick = () => {
-    if (postData) {
-      navigate("/post", { state: { id, title: postData.title, content: postData.content } });
+    if (fetchedPostData) {
+      navigate("/post", { state: { id, title: fetchedPostData.title, content: fetchedPostData.content } });
     }
   };
 
-  if (loading) {
-    return <div className={classes.textItem}>Loading...</div>;
-  }
-
-  if (!postData) {
-    return <div className={classes.textItem}>Post not found</div>;
+  if (!fetchedPostData) {
+    return <div>Loading...</div>
   }
 
   return (
@@ -69,9 +62,9 @@ const TextItem: FC<Props> = ({ id, onView }) => {
       className={classes.textItem} 
       onClick={handleClick}
     >
-      <h2 className={classes.title}>{postData.title}</h2>
+      <h2 className={classes.title}>{fetchedPostData.title}</h2>
       <span className={classes.author}>By: {getAuthorName()}</span>
-      <p className={classes.content}>{postData.content}</p>
+      <p className={classes.content}>{fetchedPostData.content}</p>
       
     </div>
   );

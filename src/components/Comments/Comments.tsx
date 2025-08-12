@@ -1,36 +1,47 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from '../../hooks/redux';
 import classes from './styles.module.scss';
-import { commentApi } from '../../api';
-import { CommentItem } from '../CommentItem';
-import { Comment } from '../../Types/Video';
+import { Comment } from '../../Types';
 import { RootState } from '../../store';
+import {CommentThread} from "../CommentThread";
+import { checkAuthStatus } from '../../store/auth';
+import { fetchCommentsByPostId, createComment } from '../../store/comment';
 
 interface Props {
-  comments: Comment[];
   postId: string;
   onCommentsUpdate: () => void;
 }
 
-const Comments: FC<Props> = ({ comments, postId, onCommentsUpdate }) => {
+const Comments: FC<Props> = ({ postId, onCommentsUpdate }) => {
+  const dispatch = useAppDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
+  const { 
+    comments: commentsByPostId,
+    pagination,
+  } = useSelector((state: RootState) => state.comments || {});
+  
   const [replyToCommentId, setReplyToCommentId] = useState<string | null>(null);
   const [replyToCommentAuthor, setReplyToCommentAuthor] = useState<string | null>(null);
   const [newComment, setNewComment] = useState('');
-  const [creatingComment, setCreatingComment] = useState(false);
-  const [loadedReplies, setLoadedReplies] = useState<Record<string, Comment[]>>({});
-  const [loadingReplies, setLoadingReplies] = useState<Record<string, boolean>>({});
-  const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
+  const comments = commentsByPostId[postId] || [];
+  const postPagination = pagination[postId] || { currentPage: 0, totalPages: 0, hasNextPage: false };
+  const hasMore = postPagination.hasNextPage;
+
+  useEffect(() => {
+    dispatch(checkAuthStatus());
+    if (postId) {
+      dispatch(fetchCommentsByPostId({ postId }));
+    }
+  }, [postId, dispatch]);
+
+  const handleLoadMore = () => {
+    const nextPage = (postPagination.currentPage || 0) + 1;
+    dispatch(fetchCommentsByPostId({ postId, page: nextPage }));
+  };
 
   const handleLikeComment = async (commentId: string) => {
     onCommentsUpdate();
-    
-    Object.keys(loadedReplies).forEach(parentId => {
-      const replies = loadedReplies[parentId];
-      if (replies.some(reply => reply._id === commentId)) {
-        onCommentsUpdate();
-      }
-    });
   };
 
   const handleReply = (commentId: string, authorName?: string) => {
@@ -38,7 +49,7 @@ const Comments: FC<Props> = ({ comments, postId, onCommentsUpdate }) => {
     setReplyToCommentAuthor(authorName || null);
 
     const commentInput = document.querySelector(
-      'textarea[placeholder*="comment"]'
+        'textarea[placeholder*="comment"]'
     ) as HTMLTextAreaElement;
     if (commentInput) {
       commentInput.focus();
@@ -47,189 +58,117 @@ const Comments: FC<Props> = ({ comments, postId, onCommentsUpdate }) => {
   };
 
   const handleCreateComment = async () => {
-    if (!newComment.trim() || !postId || creatingComment) return;
+    if (!newComment.trim() || !postId) return;
 
     try {
-      setCreatingComment(true);
-
       const commentData = {
         content: newComment.trim(),
         postId: postId,
         ...(replyToCommentId && { parentCommentId: replyToCommentId }),
       };
 
-      await commentApi.createComment(commentData);
-
-      // If it's a reply, refresh the replies for that comment
-      if (replyToCommentId && loadedReplies[replyToCommentId]) {
-        await loadReplies(replyToCommentId);
-      } else {
+      const result = await dispatch(createComment(commentData));
+      
+      if (createComment.fulfilled.match(result)) {
+        setNewComment('');
+        setReplyToCommentId(null);
+        setReplyToCommentAuthor(null);
+        
+        await dispatch(fetchCommentsByPostId({ postId }));
+        
         onCommentsUpdate();
       }
-
-      setNewComment('');
-      setReplyToCommentId(null);
-      setReplyToCommentAuthor(null);
     } catch (error) {
       console.error('Error creating comment:', error);
-    } finally {
-      setCreatingComment(false);
     }
   };
 
-  const loadReplies = async (parentCommentId: string) => {
-    if (loadingReplies[parentCommentId]) return;
-
-    try {
-      setLoadingReplies(prev => ({ ...prev, [parentCommentId]: true }));
-      const response = await commentApi.getReplies(parentCommentId);
-      setLoadedReplies(prev => ({ ...prev, [parentCommentId]: response.replies || [] }));
-    } catch (error) {
-      console.error('Error loading replies:', error);
-    } finally {
-      setLoadingReplies(prev => ({ ...prev, [parentCommentId]: false }));
-    }
-  };
-
-  const toggleReplies = async (commentId: string) => {
-    const isCollapsed = !expandedComments.has(commentId);
-
-    if (isCollapsed) {
-      if (!loadedReplies[commentId]) {
-        await loadReplies(commentId);
-      }
-      setExpandedComments(prev => {
-        const newSet = new Set(prev);
-        newSet.add(commentId);
-        return newSet;
-      });
-    } else {
-      setExpandedComments(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(commentId);
-        return newSet;
-      });
-    }
-  };
-
-  const handleUpdateReplies = async (parentCommentId: string) => {
-    if (loadedReplies[parentCommentId]) {
-      await loadReplies(parentCommentId);
-    }
-  };
-
-  const getCommentAuthorName = (comment: Comment): string => {
-    if (typeof comment.userId === 'string') {
-      return comment.userId;
-    }
-    return comment.userId?.username || 'Unknown';
-  };
-
-  const getReplyCount = (commentId: string): number => {
-    return comments.filter(c => c.parentCommentId === commentId).length;
-  };
   const topLevelComments = comments.filter(comment => !comment.parentCommentId);
 
+  const sortedTopLevelComments = topLevelComments.sort(
+      (a: Comment, b: Comment) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+
   return (
-    <div className={classes.commentsSection}>
-      <h2 className={classes.commentsHeader}>Comments ({comments.length})</h2>
+      <div className={classes.commentsSection}>
+        <h2 className={classes.commentsHeader}>Comments ({  comments.length})</h2>
 
-      <div className={classes.commentForm}>
-        <h3>Add comment</h3>
-        {replyToCommentId && replyToCommentAuthor && (
-          <div className={classes.replyContext}>
-            <span>
-              Replying to <strong>@{replyToCommentAuthor}</strong>
-            </span>
-          </div>
-        )}
-        <textarea
-          placeholder={replyToCommentId ? 'Write a reply...' : 'Write a comment...'}
-          rows={4}
-          value={newComment}
-          onChange={e => setNewComment(e.target.value)}
-          className={classes.commentInput}
-        />
-        {replyToCommentId && (
-          <div className={classes.replyInfo}>
-            <span>Reply to comment</span>
-            <button
-              type='button'
-              className={classes.cancelReply}
-              onClick={() => {
-                setReplyToCommentId(null);
-                setReplyToCommentAuthor(null);
-              }}
-            >
-              Cancel
-            </button>
-          </div>
-        )}
-        <button
-          onClick={handleCreateComment}
-          disabled={!newComment.trim() || creatingComment}
-          className={classes.submitButton}
-        >
-          {creatingComment ? 'Sending...' : 'Send'}
-        </button>
-      </div>
-
-      <div className={classes.commentsList}>
-        {topLevelComments && topLevelComments.length > 0 ? (
-          topLevelComments.map(comment => {
-            const replyCount = getReplyCount(comment._id);
-            const hasReplies = replyCount > 0;
-            const isCollapsed = !expandedComments.has(comment._id);
-            const replies = loadedReplies[comment._id] || [];
-            const isLoadingReplies = loadingReplies[comment._id];
-
-            return (
-              <div key={comment._id} className={classes.commentWrapper}>
-                <CommentItem
-                  comment={comment}
-                  onReply={commentId => handleReply(commentId, getCommentAuthorName(comment))}
-                  onLike={handleLikeComment}
-                  onUpdate={onCommentsUpdate}
-                  currentUserId={user?._id}
-                />
-
-                {hasReplies && (
+        <div className={classes.commentForm}>
+          <textarea
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="Write a comment..."
+            className={classes.commentInput}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleCreateComment();
+              }
+            }}
+          />
+          {replyToCommentId && replyToCommentAuthor && (
+              <div className={classes.replyContext}>
+                <span>
+                  Replying to <strong>@{replyToCommentAuthor}</strong>
+                </span>
+              </div>
+          )}
+          <button
+            onClick={handleCreateComment}
+            disabled={!newComment.trim()}
+            className={classes.submitBtn}
+          >
+            Comment
+          </button>
+          {replyToCommentId && (
+              <div className={classes.replyInfo}>
+                <span>Reply to comment</span>
+                <button
+                  type='button'
+                  className={classes.cancelReply}
+                  onClick={() => {
+                    setReplyToCommentId(null);
+                    setReplyToCommentAuthor(null);
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+          )}
+        </div>
+        <div className={classes.commentsList}>
+          {sortedTopLevelComments && sortedTopLevelComments.length > 0 ? (
+              <>
+                {sortedTopLevelComments.map((comment: Comment) => (
+                    <CommentThread
+                      key={comment._id}
+                      comment={comment}
+                      allComments={comments}
+                      onLike={handleLikeComment}
+                      onReply={handleReply}
+                      onUpdate={() => {
+                        dispatch(fetchCommentsByPostId({ postId }));
+                        onCommentsUpdate();
+                      }}
+                      currentUserId={user?._id}
+                      level={0}
+                    />
+                ))}
+                {hasMore && (
                   <button
-                    className={classes.toggleRepliesBtn}
-                    onClick={() => toggleReplies(comment._id)}
-                    disabled={isLoadingReplies}
+                    onClick={handleLoadMore}
+                    disabled={!hasMore}
+                    className={classes.loadMoreBtn}
                   >
-                    {isLoadingReplies
-                      ? 'Loading...'
-                      : !isCollapsed
-                        ? '▼ Hide replies'
-                        : `▶ Show ${replyCount} ${replyCount === 1 ? 'reply' : 'replies'}`}
+                    Load More
                   </button>
                 )}
-
-                {!isCollapsed && replies.length > 0 && (
-                  <div className={classes.repliesContainer}>
-                    {replies.map(reply => (
-                      <div key={reply._id} className={classes.replyWrapper}>
-                        <CommentItem
-                          comment={reply}
-                          onReply={() => handleReply(comment._id, getCommentAuthorName(comment))}
-                          onLike={handleLikeComment}
-                          onUpdate={() => handleUpdateReplies(comment._id)}
-                          currentUserId={user?._id}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })
-        ) : (
-          <div className={classes.noComments}>No comments yet</div>
-        )}
+              </>
+          ) : (
+              <div className={classes.noComments}>No comments yet</div>
+          )}
+        </div>
       </div>
-    </div>
   );
 };
 

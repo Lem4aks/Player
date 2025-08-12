@@ -1,187 +1,181 @@
-.commentsSection {
-  margin-top: 32px;
-}
-
-.commentsHeader {
-  font-size: 24px;
-  margin-bottom: 16px;
-  color: white;
-}
-
-.commentsList {
-  margin-bottom: 32px;
-}
-
-.commentWrapper {
-  margin-bottom: 16px;
-}
-
-.nestedComment {
-  margin-left: 32px;
-  position: relative;
-}
-
-.replyIndicator {
-  position: absolute;
-  left: -24px;
-  top: 0;
-}
-
-.replyLine {
-  color: #666;
-  font-weight: bold;
-}
-
-.commentContentWrapper {
-  flex: 1;
-}
-
-.replyToAuthor {
-  font-size: 12px;
-  color: white;
-  margin-bottom: 8px;
-  font-style: italic;
-}
-
-.repliesContainer {
-  margin-top: 8px;
-  margin-left: 20px;
-  border-left: 2px solid #e0e0e0;
-  padding-left: 16px;
-}
-
-.replyWrapper {
-  margin-bottom: 8px;
-  
-  &:last-child {
-    margin-bottom: 0;
-  }
-}
-
-.replyContext {
-  background-color: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 4px;
-  padding: 8px 12px;
-  margin-bottom: 8px;
-  font-size: 14px;
-  color: #495057;
-  
-  strong {
-    color: #1ed760;
-    font-weight: 600;
-  }
-}
-
-.noComments {
-  padding: 32px;
-  text-align: center;
-  color: white;
-  font-style: italic;
-}
-
 .commentForm {
   margin-top: 32px;
   padding: 24px;
   border: 1px solid #ddd;
   border-radius: 8px;
-  background-color: linear-gradient(#333, #121212);
+  background: linear-gradient(135deg, #333, #121212);
   display: flex;
   flex-direction: column;
   align-items: center;
-}
 
-.commentForm h3 {
-  margin-bottom: 16px;
-  color: white;
-}
-
-.commentInput {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  background-color: #ffffff1a;
-  color: white;
-  border-radius: 8px;
-  font-size: 16px;
-  resize: vertical;
-  min-height: 100px;
-  margin-bottom: 16px;
-  font-family: inherit;
-}
-
-.commentInput:focus {
-  outline: none;
-  border-color: #1ed760;
-}
-
-.replyInfo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-  font-size: 16px;
-  color: white;
-}
-
-.cancelReply {
-  background: none;
-  border: none;
-  color: #1ed760;
-  cursor: pointer;
-  text-decoration: underline;
-  font-size: 16px;
-}
-
-.cancelReply:hover {
-  color: #1ed760;
-}
-
-.submitButton {
-  background-color: #1ed760;
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.2s;
-}
-
-.submitButton:hover:not(:disabled) {
-  background-color: #1ed760;
-}
-
-.submitButton:disabled {
-  background-color: #6c757d;
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-.toggleRepliesBtn {
-  background: none;
-  border: none;
-  color: #1ed760;
-  cursor: pointer;
-  font-size: 12px;
-  padding: 6px 12px;
-  margin-top: 8px;
-  margin-left: 8px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  transition: all 0.2s;
-  border-radius: 4px;
-  font-weight: 500;
-
-  &:hover:not(:disabled) {
-    color: #1ed760;
-    background-color: #e3f2fd;
+  h3 {
+    margin-bottom: 16px;
+    color: white;
+    font-size: 18px;
   }
 
-  &:disabled {
-    color: #6c757d;
-    cursor: not-allowed;
-    opacity: 0.7;
+  .commentInput {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 8px;
+    font-size: 16px;
+    resize: vertical;
+    min-height: 100px;
+    margin-bottom: 16px;
+    font-family: inherit;
+    transition: all 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: #1ed760;
+      box-shadow: 0 0 0 2px rgba(30, 215, 96, 0.2);
+    }
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+  }
+
+  .replyContext {
+    background-color: rgba(30, 215, 96, 0.1);
+    border: 1px solid rgba(30, 215, 96, 0.3);
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    color: white;
+    width: 100%;
+
+    strong {
+      color: #1ed760;
+      font-weight: 600;
+    }
+  }
+
+  .replyInfo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    color: white;
+    width: 100%;
+
+    .cancelReply {
+      background: none;
+      border: none;
+      color: #1ed760;
+      cursor: pointer;
+      text-decoration: underline;
+      font-size: 14px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s;
+
+      &:hover {
+        background-color: rgba(30, 215, 96, 0.1);
+        text-decoration: none;
+      }
+    }
+  }
+
+  .submitBtn {
+    background-color: #1ed760;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.2s;
+    min-width: 120px;
+
+    &:hover:not(:disabled) {
+      background-color: #1ab856;
+      transform: translateY(-1px);
+    }
+
+    &:disabled {
+      background-color: #6c757d;
+      cursor: not-allowed;
+      opacity: 0.7;
+      transform: none;
+    }
+  }
+}
+
+.commentsSection {
+  margin-top: 32px;
+
+  .commentsHeader {
+    font-size: 24px;
+    margin-bottom: 16px;
+    color: white;
+    text-align: center;
+  }
+
+  .commentsList {
+    max-height: 600px;
+    overflow-y: auto;
+  }
+
+  .noComments {
+    padding: 32px;
+    text-align: center;
+    color: white;
+    font-style: italic;
+  }
+
+  .loadMoreBtn {
+    display: block;
+    margin: 32px auto;
+    padding: 12px 24px;
+    background-color: transparent;
+    border: 2px solid #1ed760;
+    color: #1ed760;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    min-width: 150px;
+    text-align: center;
+
+    &:hover:not(:disabled) {
+      background-color: #1ed760;
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(30, 215, 96, 0.3);
+    }
+
+    &:disabled {
+      border-color: #6c757d;
+      color: #6c757d;
+      cursor: not-allowed;
+      opacity: 0.7;
+      transform: none;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .commentThread {
+    &.nestedComment {
+      margin-left: 16px;
+    }
+  }
+
+  .commentForm {
+    padding: 16px;
+
+    .commentInput {
+      font-size: 14px;
+      min-height: 80px;
+    }
   }
 }

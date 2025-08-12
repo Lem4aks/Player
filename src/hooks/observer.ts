@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 interface IObserver {
   threshold?: number;
@@ -13,8 +13,6 @@ export const useObserver = (
   enabled: boolean = true
 ) => {
   const elementRef = useRef<HTMLDivElement>(null);
-//const [hasBeenViewed, setHasBeenViewed] = useState(false);
-//const [isProcessing, setIsProcessing] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   const {
@@ -36,8 +34,6 @@ export const useObserver = (
                 await onView(postId);
               } catch (error) {
                 console.error('Error recording view:', error);
-              } finally {
-                //setIsProcessing(false);
               }
             }, delay);
           } else if (!entry.isIntersecting && timeoutRef.current) {

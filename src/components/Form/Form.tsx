@@ -8,6 +8,7 @@ import { Select } from '../Select';
 
 interface Props {
   onClose: () => void;
+  onPostCreated?: (newPost: any) => void;
 }
 
 interface IFormInput {
@@ -24,7 +25,7 @@ const postTypes = [
   { value: 'text', label: 'Text' },
 ];
 
-const Form: FC<Props> = ({ onClose }) => {
+const Form: FC<Props> = ({ onClose, onPostCreated }) => {
   const {
     register,
     handleSubmit,
@@ -46,7 +47,7 @@ const Form: FC<Props> = ({ onClose }) => {
 
   const onSubmit: SubmitHandler<IFormInput> = async data => {
     try {
-      const newPost = await postApi.createPost({
+      const response = await postApi.createPost({
         title: data.title,
         type: data.type,
         description: data.type === 'text' ? (data.content || '') : (data.description || ''),
@@ -56,6 +57,8 @@ const Form: FC<Props> = ({ onClose }) => {
 
       reset();
       onClose();
+      
+      onPostCreated?.(response.post);
     } catch (error) {
       console.error('Error creating post:', error);
     }

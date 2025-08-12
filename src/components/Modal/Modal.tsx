@@ -5,9 +5,10 @@ import { Form } from '../Form';
 interface Props {
   isVisible: boolean;
   onClose: () => void;
+  onPostCreated?: (newPost: any) => void;
 }
 
-const Modal: FC<Props> = ({ isVisible, onClose }) => {
+const Modal: FC<Props> = ({ isVisible, onClose, onPostCreated }) => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isVisible) {
@@ -38,7 +39,7 @@ const Modal: FC<Props> = ({ isVisible, onClose }) => {
     <div className={`${classes.modal} ${isVisible ? classes.visible : classes.hidden}`}>
       <div className={classes.overlay} onClick={onClose}></div>
       <div className={classes.content}>
-        <Form onClose={onClose} />
+        <Form onClose={onClose} onPostCreated={onPostCreated} />
       </div>
     </div>
   );

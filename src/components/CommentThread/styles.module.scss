@@ -1,0 +1,81 @@
+.commentThread {
+  margin-bottom: 16px;
+
+  .commentWrapper {
+    position: relative;
+  }
+
+  &.nestedComment {
+    margin-left: 24px;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: -12px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, #1ed760, rgba(30, 215, 96, 0.3));
+      border-radius: 1px;
+    }
+
+    &:nth-child(2n)::before {
+      background: linear-gradient(to bottom, #007bff, rgba(0, 123, 255, 0.3));
+    }
+
+    &:nth-child(3n)::before {
+      background: linear-gradient(to bottom, #ffc107, rgba(255, 193, 7, 0.3));
+    }
+
+    &:nth-child(4n)::before {
+      background: linear-gradient(to bottom, #dc3545, rgba(220, 53, 69, 0.3));
+    }
+  }
+
+  .repliesContainer {
+    margin-top: 12px;
+    animation: fadeIn 0.3s ease-in-out;
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  }
+
+  .toggleRepliesBtn {
+    background: none;
+    border: none;
+    color: #1ed760;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 6px 12px;
+    margin-top: 8px;
+    margin-left: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+    border-radius: 4px;
+    font-weight: 500;
+
+    &:hover:not(:disabled) {
+      color: #1ed760;
+      background-color: rgba(30, 215, 96, 0.1);
+    }
+
+    &:disabled {
+      color: #6c757d;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+  }
+
+
+}

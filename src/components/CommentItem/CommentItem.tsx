@@ -1,7 +1,10 @@
-import { FC, useState } from 'react';
+import React, { FC, useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../../store';
 import classes from './styles.module.scss';
-import { Comment } from '../../Types/Video';
-import { commentApi } from '../../api/commentApi';
+import { Comment } from '../../Types';
+import { updateComment, deleteComment, likeComment } from '../../store/comment';
+import LikeIcon from "../../assets/svg/LikeIcon";
 
 interface Props {
   comment: Comment;
@@ -12,41 +15,38 @@ interface Props {
 }
 
 const CommentItem: FC<Props> = ({ comment, onReply, onLike, onUpdate, currentUserId }) => {
+  const dispatch = useDispatch<AppDispatch>();
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [isLiking, setIsLiking] = useState(false);
-  const [localLikeCount, setLocalLikeCount] = useState(comment.likes?.length || 0);
+  const isLiking = useSelector((state: RootState) => 
+    state.comments.loadingStates?.[comment._id]?.isLiking || false
+  );
+  const localLikeCount = comment.counts?.likes || 0;
+  
+  const hasLiked = comment.userInteraction?.isLiked === true;
+  
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('ru-RU', {
-      day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return date.toLocaleDateString();
   };
 
   const handleUpdateComment = async () => {
-    if (!editContent.trim() || isUpdating) return;
+    if (!editContent.trim()) return;
 
     try {
-      setIsUpdating(true);
-      await commentApi.updateComment(comment._id, { content: editContent.trim() });
+      await dispatch(updateComment({ commentId: comment._id, content: editContent.trim() })).unwrap();
       setIsEditing(false);
       onUpdate?.();
     } catch (error) {
       console.error('Error updating comment:', error);
-    } finally {
-      setIsUpdating(false);
     }
   };
 
   const handleDeleteComment = async () => {
     if (window.confirm('Are you sure you want to delete this comment?')) {
       try {
-        await commentApi.deleteComment(comment._id);
+        await dispatch(deleteComment(comment._id)).unwrap();
         onUpdate?.();
       } catch (error) {
         console.error('Error deleting comment:', error);
@@ -60,86 +60,43 @@ const CommentItem: FC<Props> = ({ comment, onReply, onLike, onUpdate, currentUse
   };
 
   const handleLikeComment = async () => {
-    console.log('handleLikeComment called, isLiking:', isLiking);
+    if (!comment._id || isLiking) return;
     
-    if (isLiking) {
-      console.log('Already liking, returning early');
-      return;
-    }
-
     try {
-      console.log('Setting isLiking to true');
-      setIsLiking(true);
+      await dispatch(likeComment({ 
+        commentId: comment._id, 
+        isLiking: !hasLiked 
+      })).unwrap();
       
-      const getUserIdFromToken = () => {
-        const token = localStorage.getItem('token');
-        if (!token) return null;
-        try {
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          return payload.userId;
-        } catch (error) {
-          return null;
-        }
-      };
-      
-      const currentUserId = getUserIdFromToken();
-      
-      const hasLiked = currentUserId && comment.likes && 
-        comment.likes.some(likeUserId => 
-          String(likeUserId) === String(currentUserId)
-        );
-      
-      const isLiking = !hasLiked; 
-      const response = await commentApi.likeComment(comment._id, { isLiking });    
-      
-      if (response.likesCount !== undefined) {
-        setLocalLikeCount(response.likesCount);
-      } else {
-        setLocalLikeCount((prev: number) => isLiking ? prev + 1 : prev - 1);
-      }
-      
-      if (response.comment && response.comment.likes) {
-        comment.likes = response.comment.likes;
-      } else {
-        if (isLiking) {
-          if (!comment.likes.includes(currentUserId)) {
-            comment.likes.push(currentUserId);
-          }
-        } else {
-          comment.likes = comment.likes.filter(id => String(id) !== String(currentUserId));
-        }
-      }
-      
-      onLike(comment._id);
+  onLike(comment._id);
     } catch (error) {
       console.error('Error liking comment:', error);
-    } finally {
-      console.log('Setting isLiking to false, function completed');
-      setIsLiking(false);
     }
   };
 
-  const user =
-    typeof comment.userId === 'string'
-      ? { username: comment.userId, avatar: undefined }
-      : comment.userId;
+  const getUserName = () => {
+    if (typeof comment.userId === 'string') return comment.userId;
+    return comment.userId?.username || 'Unknown';
+  };
 
-  const isOwner =
-    currentUserId &&
-    comment.userId &&
-    (typeof comment.userId === 'string'
-      ? comment.userId === currentUserId
-      : comment.userId._id === currentUserId);
+  const getUserId = () => {
+    if (typeof comment.userId === 'string') return comment.userId;
+    return comment.userId?._id;
+  };
+
+  const isOwner = currentUserId && getUserId() === currentUserId;
 
   return (
     <div className={classes.comment}>
       <div className={classes.commentHeader}>
         <div className={classes.author}>
           <div className={classes.avatar}>
-            {(user?.username || 'U').charAt(0).toUpperCase()}
+            {getUserName().charAt(0).toUpperCase()}
           </div>
-          <span className={classes.username}>{user?.username || 'Unknown'}</span>
-          <span className={classes.date}>{formatDate(comment.createdAt)}</span>
+          <div className={classes.authorInfo}>
+            <span className={classes.username}>{getUserName()}</span>
+            <span className={classes.date}>{formatDate(comment.createdAt)}</span>
+          </div>
         </div>
       </div>
 
@@ -154,10 +111,10 @@ const CommentItem: FC<Props> = ({ comment, onReply, onLike, onUpdate, currentUse
           <div className={classes.editActions}>
             <button
               onClick={handleUpdateComment}
-              disabled={!editContent.trim() || isUpdating}
+              disabled={!editContent.trim()}
               className={classes.saveBtn}
             >
-              {isUpdating ? 'Saving...' : 'Save'}
+              Save
             </button>
             <button onClick={handleCancelEdit} className={classes.cancelBtn}>
               Cancel
@@ -169,22 +126,32 @@ const CommentItem: FC<Props> = ({ comment, onReply, onLike, onUpdate, currentUse
       )}
 
       <div className={classes.commentActions}>
-        <button 
-          className={classes.likeBtn} 
+        <button
+          className={`${classes.likeBtn} ${hasLiked ? classes.liked : ''}`}
           onClick={handleLikeComment}
           disabled={isLiking}
         >
-          {isLiking ? 'Liking...' : `Like ${localLikeCount}`}
+          <span className={classes.likeIcon}><LikeIcon/></span>
+          <span className={classes.likeCount}>{localLikeCount}</span>
         </button>
-        <button className={classes.replyBtn} onClick={() => onReply(comment._id)}>
+        <button
+          className={classes.replyBtn}
+          onClick={() => onReply(comment._id)}
+        >
           Reply
         </button>
-        {isOwner && !isEditing && (
+        {isOwner && (
           <>
-            <button className={classes.editBtn} onClick={() => setIsEditing(true)}>
+            <button
+              className={classes.editBtn}
+              onClick={() => setIsEditing(true)}
+            >
               Edit
             </button>
-            <button className={classes.deleteBtn} onClick={handleDeleteComment}>
+            <button
+              className={classes.deleteBtn}
+              onClick={handleDeleteComment}
+            >
               Delete
             </button>
           </>

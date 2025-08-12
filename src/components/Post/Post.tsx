@@ -1,29 +1,58 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useRef, useState, useEffect, RefObject } from "react";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import classes from "./styles.module.scss";
 import { PostItem } from "../PostItem";
-import { postApi } from "../../api";
 import Comments from "../Comments/Comments";
 import LikeIcon from "../../assets/svg/LikeIcon";
 import Loading from "../Loading/Loading";
+import { 
+  fetchPostById, 
+  likePost, 
+  clearCurrentPost,
+  selectCurrentPost,
+} from "../../store/post";
+import { fetchCommentsByPostId } from "../../store/comment";
+import { PostData } from "../../Types/Video";
+
+interface LocationState {
+  id?: string;
+}
 
 const Post = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { id: postId } = (location.state as { id: string }) || {};
+  const dispatch = useAppDispatch();  
+  
+  const { id: postId } = (location.state as LocationState) || {};
   const videoRef = useRef<HTMLVideoElement>(null);
+  
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [postData, setPostData] = useState<any>(null);
-  const [liking, setLiking] = useState(false);
-  const [likesCount, setLikesCount] = useState(0);
-  const [viewsCount, setViewsCount] = useState(0);
-  const [hasLiked, setHasLiked] = useState(false);
+  
+  const currentPost = useAppSelector(selectCurrentPost) as PostData | null;
+  const isLiking = useAppSelector(state => 
+    postId ? state.posts.loadingStates[postId]?.isLiking : false
+  );
+  const { isAuthenticated } = useAppSelector(state => state.auth);
+  const commentsState = useAppSelector(state => state.comments);
+  const commentsCount = commentsState.totalComments;
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, navigate]);
 
   useEffect(() => {
     if (postId) {
-      fetchPostData();
+      dispatch(fetchPostById(postId));
+      dispatch(fetchCommentsByPostId({ postId, page: 1, limit: 10 }));
     }
-  }, [postId]);
+    
+    return () => {
+      dispatch(clearCurrentPost());
+    };
+  }, [dispatch, postId]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -37,55 +66,6 @@ const Post = () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
     };
   }, []);
-
-  const fetchPostData = async () => {
-    try {
-      const response = await postApi.getPostById(String(postId));
-
-      const post = response.post || response;
-      const userInteraction = response.userInteraction;
-      const counts = response.counts;
-
-      setPostData(post);
-
-      if (counts) {
-        setLikesCount(counts.likes || 0);
-        setViewsCount(counts.views || 0);
-      } else if (post) {
-        setLikesCount(post.likes?.length || 0);
-        setViewsCount(post.views?.length || 0);
-      }
-
-      const getUserIdFromToken = () => {
-        const token = localStorage.getItem("token");
-        if (!token) return null;
-
-        try {
-          const payload = JSON.parse(atob(token.split(".")[1]));
-          return payload.userId;
-        } catch (error) {
-          console.error("Error decoding token:", error);
-          return null;
-        }
-      };
-
-      const currentUserId =
-        localStorage.getItem("userId") ||
-        localStorage.getItem("user_id") ||
-        getUserIdFromToken();
-
-      if (userInteraction && userInteraction.hasLiked !== undefined) {
-        setHasLiked(userInteraction.hasLiked);
-      } else if (post && post.likes && currentUserId) {
-        const isLiked = post.likes.includes(currentUserId);
-        setHasLiked(isLiked);
-      } else {
-        setHasLiked(false);
-      }
-    } catch (error) {
-      console.error("Error fetching post:", error);
-    }
-  };
 
   const handleBack = () => {
     navigate("/");
@@ -104,51 +84,43 @@ const Post = () => {
   };
 
   const handleLike = async () => {
-    if (!postData || liking) return;
+    if (!currentPost || isLiking) return;
 
     try {
-      setLiking(true);
-
-      const isLiking = !hasLiked;
-
-      const response = await postApi.likePost(postData._id, isLiking);
-
-      if (response.likesCount !== undefined) {
-        setLikesCount(response.likesCount);
-      }
-
-      if (response.hasLiked !== undefined) {
-        setHasLiked(response.hasLiked);
-      }
-
-      if (response.post) {
-        const updatedPost = {
-          ...response.post,
-          userId: postData.userId,
-          comments: postData.comments,
-        };
-        setPostData(updatedPost);
-      }
+      const shouldLike = !currentPost.userInteraction?.isLiked;
+      await dispatch(likePost({ 
+        postId: currentPost._id, 
+        isLiking: shouldLike 
+      })).unwrap();
     } catch (error) {
       console.error("Error liking post:", error);
-    } finally {
-      setLiking(false);
     }
   };
 
-  const getAuthorName = () => {
-    if (postData.userId) {
-      if (typeof postData.userId === "object") {
-        return postData.userId.username || postData.userId.name || "Unknown";
-      } else {
-        return "Unknown";
-      }
+  const handleCommentsUpdate = () => {
+    if (postId) {
+      dispatch(fetchCommentsByPostId({ postId, page: 1, limit: 10 }));
+    }
+  };
+
+  const getAuthorName = (): string => {
+    if (!currentPost?.userId) return "Unknown";
+    
+    if (typeof currentPost.userId === "object" && currentPost.userId !== null) {
+      const user = currentPost.userId as { username?: string; name?: string };
+      return user.username || user.name || "Unknown";
     }
     return "Unknown";
   };
 
-  if (!postId || !postData) {
-    return <Loading />;
+  if (!currentPost) {
+    return (
+      <div className={classes.container}>
+        <div className={classes.loadingContainer}>
+          <Loading />
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -162,8 +134,9 @@ const Post = () => {
           className={`${classes.videoContainer} ${isFullscreen ? classes.fullscreen : ""}`}
         >
           <PostItem
-            id={postData._id}
-            type={postData.type}
+            id={currentPost._id}
+            postData={currentPost}
+            type={currentPost.type}
             onVideoClick={() => toggleFullscreen()}
             videoRef={videoRef as RefObject<HTMLVideoElement>}
             isFullscreen={isFullscreen}
@@ -171,32 +144,32 @@ const Post = () => {
           />
         </div>
 
-        <h1 className={classes.title}>{postData.title}</h1>
+        <h1 className={classes.title}>{currentPost.title}</h1>
 
         <div className={classes.authorInfo}>
           <span>Author: {getAuthorName()}</span>
         </div>
 
         <div className={classes.stats}>
-          <span>{viewsCount} views</span>
-          <span>{likesCount} likes</span>
+          <span>{currentPost.counts?.views || 0} views</span>
+          <span>{currentPost.counts?.likes || 0} likes</span>
+          <span>{commentsCount} comments</span>
           <button
-            className={`${classes.likeButton} ${hasLiked ? classes.liked : ""}`}
+            className={`${classes.likeButton} ${currentPost.userInteraction?.isLiked ? classes.liked : ""}`}
             onClick={handleLike}
-            disabled={liking}
+            disabled={isLiking}
           >
             <LikeIcon />
           </button>
         </div>
 
         <div className={classes.description}>
-          <p>{postData.description}</p>
+          <p>{currentPost.description}</p>
         </div>
 
         <Comments
-          comments={postData.comments || []}
-          postId={postData._id}
-          onCommentsUpdate={fetchPostData}
+          postId={currentPost._id}
+          onCommentsUpdate={handleCommentsUpdate}
         />
       </div>
     </div>

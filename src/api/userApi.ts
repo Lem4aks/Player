@@ -1,11 +1,7 @@
 import axios from 'axios';
+import { getAuthHeaders } from './helper';
 
 const API_BASE_URL = process.env.REACT_APP_URL_BACK;
-
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
 
 export const userApi = {
   login: async (credentials: { email: string; password: string }) => {
@@ -30,10 +26,6 @@ export const userApi = {
     return response.data;
   },
 
-  getUserByUsername: async (username: string) => {
-    const response = await axios.get(`${API_BASE_URL}/api/users/username/${username}`);
-    return response.data;
-  },
 
   updateProfile: async (updateData: { name?: string; email?: string }) => {
     const response = await axios.put(`${API_BASE_URL}/api/users/profile`, updateData, {

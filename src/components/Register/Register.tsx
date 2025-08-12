@@ -1,4 +1,4 @@
-import { FC, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import classes from './styles.module.scss';
@@ -8,7 +8,7 @@ import { clearError, register } from '../../store/auth';
 const Register: FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { error } = useAppSelector((state) => state.auth);
+  const { error, isAuthenticated } = useAppSelector((state) => state.auth);
 
   const [formData, setFormData] = useState({
     username: '',
@@ -17,6 +17,12 @@ const Register: FC = () => {
     password: '',
     confirmPassword: '',
   });
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/');
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

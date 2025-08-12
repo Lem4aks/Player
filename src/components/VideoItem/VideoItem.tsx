@@ -20,34 +20,32 @@ const VideoItem: FC<Props> = ({
   videoRef: externalVideoRef,
   isFullscreen = false,
   showFullscreenControls = false,
-  onView
+  onView,
 }) => {
   const internalVideoRef = useRef<HTMLVideoElement>(null);
   const videoRef = externalVideoRef || internalVideoRef;
   const navigate = useNavigate();
-  const [postData, setPostData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+
+  const [fetchedPostData, setFetchedPostData] = useState<any>(null);
 
   useEffect(() => {
-      const fetchPost = async () => {
-        try {
-          const response = await postApi.getPostById(id);
-          const post = response.post;
-          setPostData(post);
-          setLoading(false);
-        } catch (error) {
-          console.error('Error fetching post:', error);
-          setLoading(false);
-        }
-      };
-      
-      fetchPost();
-    }, [id]);
+    const fetchPost = async () => {
+      try {
+        const response = await postApi.getPostById(id);
+        const post = response.post;
+        setFetchedPostData(post);
+      } catch (error) {
+        console.error('Error fetching post:', error);
+      }
+    };
+
+    fetchPost();
+  }, [id]);
 
   const getAuthorName = () => {
-    if (!postData?.userId) return 'Unknown';
-    if (typeof postData.userId === 'object') {
-      return postData.userId.username || postData.userId.name || 'Unknown';
+    if (!fetchedPostData?.userId) return 'Unknown';
+    if (typeof fetchedPostData.userId === 'object') {
+      return fetchedPostData.userId.username || fetchedPostData.userId.name || 'Unknown';
     }
     return 'Unknown';
   };
@@ -64,10 +62,10 @@ const VideoItem: FC<Props> = ({
   );
 
   const handleVideoClick = () => {
-    if (showFullscreenControls && videoRef?.current && postData) {
+    if (showFullscreenControls && videoRef?.current && fetchedPostData) {
       onVideoClick(id, videoRef.current);
-    } else if (postData) {
-      navigate('/post', { state: { id, src: postData.src, title: postData.title } });
+    } else if (fetchedPostData) {
+      navigate('/post', { state: { id, src: fetchedPostData.src, title: fetchedPostData.title } });
     }
   };
 
@@ -77,20 +75,8 @@ const VideoItem: FC<Props> = ({
     }
   };
 
-  if (loading) {
-    return (
-      <div ref={elementRef} className={`${classes.videoItem}`}>
-        Loading...
-      </div>
-    );
-  }
-
-  if (!postData) {
-    return (
-      <div ref={elementRef} className={`${classes.videoItem}`}>
-        Post not found
-      </div>
-    );
+  if (!fetchedPostData) {
+    return <div>Loading...</div>
   }
 
   return (
@@ -100,15 +86,15 @@ const VideoItem: FC<Props> = ({
     >
       {!isFullscreen && (
         <>
-          <p className={classes.title}>{postData.title}</p>
+          <p className={classes.title}>{fetchedPostData.title}</p>
           <span className={classes.author}>By: {getAuthorName()}</span><br />
-          <span className={classes.description}>{postData.description}</span>
+          <span className={classes.description}>{fetchedPostData.description}</span>
         </>
       )}
       <div className={classes.videoContainer}>
         <video
           ref={videoRef}
-          src={postData.src}
+          src={fetchedPostData.src}
           onClick={handleVideoClick}
           muted
           loop

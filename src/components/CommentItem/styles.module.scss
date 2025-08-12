@@ -78,7 +78,7 @@
       transition: all 0.2s ease;
 
       &:hover {
-        background-color: #f0f0f0;
+        background-color: rgba(255, 255, 255, 0.1);
         color: white;
       }
     }
@@ -101,20 +101,20 @@
     }
 
     .editBtn {
-      color: #007bff;
-      
+      color: #1ed760;
+
       &:hover {
-        background-color: #e3f2fd;
-        color: #0056b3;
+        background-color: rgba(30, 215, 96, 0.1);
+        color: #1ed760;
       }
     }
 
     .deleteBtn {
-      color: #dc3545;
-      
+      color: #ff4757;
+
       &:hover {
-        background-color: #f8d7da;
-        color: #721c24;
+        background-color: rgba(255, 71, 87, 0.1);
+        color: #ff4757;
       }
     }
   }
@@ -187,28 +187,5 @@
   }
 }
 
-.commentsSection {
-  margin-top: 24px;
-  border-top: 1px solid #e0e0e0;
-  padding-top: 16px;
 
-  .commentsHeader {
-    font-size: 18px;
-    font-weight: 600;
-    color: white;
-    margin-bottom: 16px;
-    text-align: center;
-  }
 
-  .commentsList {
-    max-height: 400px;
-    overflow-y: auto;
-  }
-
-  .noComments {
-    text-align: center;
-    color: white;
-    font-style: italic;
-    padding: 20px;
-  }
-}

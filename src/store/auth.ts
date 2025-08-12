@@ -5,7 +5,6 @@ import { userApi } from '../api/userApi';
 const initialState: AuthState = {
   user: null,
   isAuthenticated: localStorage.getItem('token') !== null,
-  isLoading: false,
   error: null,
 };
 

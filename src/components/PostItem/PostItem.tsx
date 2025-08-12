@@ -6,6 +6,7 @@ import VideoItem from "../VideoItem/VideoItem";
 
 interface Props {
   id: string;
+  postData: any;
   type: "video" | "text" | "image";
   onView?: (postId: string) => Promise<void>;
   onVideoClick?: (videoId: string, videoElement: HTMLVideoElement) => void;
@@ -16,6 +17,7 @@ interface Props {
 
 const PostItem: FC<Props> = ({ 
   id, 
+  postData,
   type, 
   onView, 
   onVideoClick, 
@@ -32,7 +34,7 @@ const PostItem: FC<Props> = ({
       case "video":
         return (
           <VideoItem 
-            id={id} 
+            id={id}
             onVideoClick={onVideoClick || (() => {})} 
             videoRef={videoRef}
             isFullscreen={isFullscreen}
