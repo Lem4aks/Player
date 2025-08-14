@@ -1,9 +1,10 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import {BrowserRouter as Router, Routes, Route, Navigate} from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import ProtectedRoute from './ProtectedRoute';
 import AuthLayout from '../Layouts/AuthLayout/AuthLayout';
 import MainLayout from '../Layouts/MainLayout/MainLayout';
 import { Loading } from '../components';
+import {NotFound} from "../components/404";
 
 const AppWithAuth = lazy(() => import('../AppWithAuth'));
 const Login = lazy(() => import('../components/Login/Login'));
@@ -15,6 +16,8 @@ const Routs = () => {
     <Router>
       <Suspense fallback={<Loading />}>
         <Routes>
+          <Route path="/404" element={<NotFound />} />
+            <Route path="*" element={<Navigate replace to="/404" />} />
           <Route element={<AuthLayout />}>
             <Route path='/login' element={<Login />} />
             <Route path='/register' element={<Register />} />

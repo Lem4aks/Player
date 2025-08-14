@@ -151,13 +151,13 @@ const postsSlice = createSlice({
         state.currentPost = action.payload;
       })
 
-      .addCase(createPost.fulfilled, (state, action) => {
-        const newPost = action.payload;
-        if (!newPost) return;
-        
-        state.posts.unshift(newPost);
-        state.pagination.total += 1;
-      })
+        .addCase(createPost.fulfilled, (state, action) => {
+          const newPost = action.payload;
+          if (!newPost) return;
+
+          state.posts = [newPost, ...state.posts];
+          state.pagination.total += 1;
+        })
 
       .addCase(updatePost.fulfilled, (state, action) => {
         const updatedPost = action.payload;

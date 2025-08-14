@@ -9,22 +9,26 @@ import LikeIcon from "../../assets/svg/LikeIcon";
 interface Props {
   comment: Comment;
   onReply: (commentId: string) => void;
-  onLike: (commentId: string) => void;
   onUpdate?: () => void;
   currentUserId?: string;
 }
 
-const CommentItem: FC<Props> = ({ comment, onReply, onLike, onUpdate, currentUserId }) => {
+const CommentItem: FC<Props> = ({ comment, onReply, onUpdate, currentUserId }) => {
   const dispatch = useDispatch<AppDispatch>();
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
-  const isLiking = useSelector((state: RootState) => 
-    state.comments.loadingStates?.[comment._id]?.isLiking || false
+
+  const [localLiked, setLocalLiked] = useState(comment.userInteraction?.isLiked === true);
+  const [localLikeCount, setLocalLikeCount] = useState(comment.counts?.likes || 0);
+
+  const isLiking = useSelector((state: RootState) =>
+      state.comments.loadingStates?.[comment._id]?.isLiking || false
   );
-  const localLikeCount = comment.counts?.likes || 0;
-  
-  const hasLiked = comment.userInteraction?.isLiked === true;
-  
+
+  useEffect(() => {
+    setLocalLiked(comment.userInteraction?.isLiked === true);
+    setLocalLikeCount(comment.counts?.likes || 0);
+  }, [comment.userInteraction?.isLiked, comment.counts?.likes]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -61,15 +65,28 @@ const CommentItem: FC<Props> = ({ comment, onReply, onLike, onUpdate, currentUse
 
   const handleLikeComment = async () => {
     if (!comment._id || isLiking) return;
-    
+
+    // Оптимистичное обновление UI
+    const wasLiked = localLiked;
+    const newLiked = !wasLiked;
+    const newCount = wasLiked ? localLikeCount - 1 : localLikeCount + 1;
+
+    setLocalLiked(newLiked);
+    setLocalLikeCount(newCount);
+
     try {
-      await dispatch(likeComment({ 
-        commentId: comment._id, 
-        isLiking: !hasLiked 
+      await dispatch(likeComment({
+        commentId: comment._id,
+        isLiking: newLiked
       })).unwrap();
-      
-  onLike(comment._id);
+
+      // Убираем вызов onLike, который может вызывать лишний GET
+      // onLike?.(comment._id);
+
     } catch (error) {
+      // Откатываем изменения в случае ошибки
+      setLocalLiked(wasLiked);
+      setLocalLikeCount(localLikeCount);
       console.error('Error liking comment:', error);
     }
   };
@@ -87,77 +104,77 @@ const CommentItem: FC<Props> = ({ comment, onReply, onLike, onUpdate, currentUse
   const isOwner = currentUserId && getUserId() === currentUserId;
 
   return (
-    <div className={classes.comment}>
-      <div className={classes.commentHeader}>
-        <div className={classes.author}>
-          <div className={classes.avatar}>
-            {getUserName().charAt(0).toUpperCase()}
-          </div>
-          <div className={classes.authorInfo}>
-            <span className={classes.username}>{getUserName()}</span>
-            <span className={classes.date}>{formatDate(comment.createdAt)}</span>
+      <div className={classes.comment}>
+        <div className={classes.commentHeader}>
+          <div className={classes.author}>
+            <div className={classes.avatar}>
+              {getUserName().charAt(0).toUpperCase()}
+            </div>
+            <div className={classes.authorInfo}>
+              <span className={classes.username}>{getUserName()}</span>
+              <span className={classes.date}>{formatDate(comment.createdAt)}</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      {isEditing ? (
-        <div className={classes.editForm}>
+        {isEditing ? (
+            <div className={classes.editForm}>
           <textarea
-            value={editContent}
-            onChange={e => setEditContent(e.target.value)}
-            className={classes.editTextarea}
-            rows={3}
+              value={editContent}
+              onChange={e => setEditContent(e.target.value)}
+              className={classes.editTextarea}
+              rows={3}
           />
-          <div className={classes.editActions}>
-            <button
-              onClick={handleUpdateComment}
-              disabled={!editContent.trim()}
-              className={classes.saveBtn}
-            >
-              Save
-            </button>
-            <button onClick={handleCancelEdit} className={classes.cancelBtn}>
-              Cancel
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className={classes.commentContent}>{comment.content}</div>
-      )}
-
-      <div className={classes.commentActions}>
-        <button
-          className={`${classes.likeBtn} ${hasLiked ? classes.liked : ''}`}
-          onClick={handleLikeComment}
-          disabled={isLiking}
-        >
-          <span className={classes.likeIcon}><LikeIcon/></span>
-          <span className={classes.likeCount}>{localLikeCount}</span>
-        </button>
-        <button
-          className={classes.replyBtn}
-          onClick={() => onReply(comment._id)}
-        >
-          Reply
-        </button>
-        {isOwner && (
-          <>
-            <button
-              className={classes.editBtn}
-              onClick={() => setIsEditing(true)}
-            >
-              Edit
-            </button>
-            <button
-              className={classes.deleteBtn}
-              onClick={handleDeleteComment}
-            >
-              Delete
-            </button>
-          </>
+              <div className={classes.editActions}>
+                <button
+                    onClick={handleUpdateComment}
+                    disabled={!editContent.trim()}
+                    className={classes.saveBtn}
+                >
+                  Save
+                </button>
+                <button onClick={handleCancelEdit} className={classes.cancelBtn}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+        ) : (
+            <div className={classes.commentContent}>{comment.content}</div>
         )}
+
+        <div className={classes.commentActions}>
+          <button
+              className={`${classes.likeBtn} ${localLiked ? classes.liked : ''}`}
+              onClick={handleLikeComment}
+              disabled={isLiking}
+          >
+            <span className={classes.likeIcon}><LikeIcon/></span>
+            <span className={classes.likeCount}>{localLikeCount}</span>
+          </button>
+          <button
+              className={classes.replyBtn}
+              onClick={() => onReply(comment._id)}
+          >
+            Reply
+          </button>
+          {isOwner && (
+              <>
+                <button
+                    className={classes.editBtn}
+                    onClick={() => setIsEditing(true)}
+                >
+                  Edit
+                </button>
+                <button
+                    className={classes.deleteBtn}
+                    onClick={handleDeleteComment}
+                >
+                  Delete
+                </button>
+              </>
+          )}
+        </div>
       </div>
-    </div>
   );
 };
 

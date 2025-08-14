@@ -2,6 +2,7 @@
   text-align: center;
   height: 100%;
   width: 100%;
+  color:white;
 }
 
 .videoItem.fullscreen {
@@ -14,15 +15,6 @@
   background: black;
   display: flex;
   flex-direction: column;
-}
-
-.title {
-  color: white;
-  margin: 0 0 10px 0;
-  font-weight: bold;
-}
-.description {  
-  color: #ccc;
 }
 
 .videoContainer {
@@ -73,9 +65,4 @@
   object-fit: contain;
   max-height: 100vh;
   max-width: 100vw;
-}
-
-.author {
-  color: #ccc;
-  font-weight: 500;
 }

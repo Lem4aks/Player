@@ -86,8 +86,8 @@ const VideoItem: FC<Props> = ({
     >
       {!isFullscreen && (
         <>
-          <p className={classes.title}>{fetchedPostData.title}</p>
-          <span className={classes.author}>By: {getAuthorName()}</span><br />
+          <h2 className={classes.title}>{fetchedPostData.title}</h2>
+          <p className={classes.author}>By: {getAuthorName()}</p><br />
           <span className={classes.description}>{fetchedPostData.description}</span>
         </>
       )}

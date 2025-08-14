@@ -1,9 +1,8 @@
 import { Header, Modal, PostItem } from "./components";
 import { useState, useEffect, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from './hooks/redux';
-import { checkAuthStatus } from './store/auth';
-import { 
-  fetchAllPosts, 
+import {
+  fetchAllPosts,
   incrementPostViews,
   setSearchQuery,
   selectFilteredPosts,
@@ -18,13 +17,13 @@ function App() {
 
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  
+
   const posts = useAppSelector(selectFilteredPosts) as PostData[];
   const pagination = useAppSelector(selectPostsPagination);
   const searchQuery = useAppSelector(selectSearchQuery) as string;
 
   useEffect(() => {
-    dispatch(fetchAllPosts({ page: 1, limit: 2 }));
+    dispatch(fetchAllPosts({ page: 1, limit: 4 }));
   }, [dispatch]);
 
   const handleAddClick = () => {
@@ -39,12 +38,12 @@ function App() {
     try {
       const currentPost = posts.find(p => p._id === postId);
       if (!currentPost) return;
-      
+
       const newViewCount = (currentPost.counts?.views || 0) + 1;
-      
-      dispatch(incrementPostViews({ 
-        postId, 
-        viewCount: newViewCount 
+
+      dispatch(incrementPostViews({
+        postId,
+        viewCount: newViewCount
       }));
     } catch (error) {
       console.error('Error incrementing views:', error);
@@ -58,14 +57,14 @@ function App() {
 
     try {
       setIsLoadingMore(true);
-      await dispatch(fetchAllPosts({ 
-        page: pagination.currentPage + 1, 
-        limit: 2, 
-        loadMore: true 
+      await dispatch(fetchAllPosts({
+        page: pagination.currentPage + 1,
+        limit: 2,
+        loadMore: true
       })).unwrap();
-      
+
       await new Promise(resolve => setTimeout(resolve, 100));
-      
+
     } catch (error) {
       console.error('Error loading more posts:', error);
     } finally {
@@ -97,17 +96,17 @@ function App() {
     sentinel.id = 'scroll-sentinel';
     sentinel.style.height = '10px';
     sentinel.style.width = '100%';
-    
+
     const setupSentinel = () => {
       const mainElement = document.querySelector('main');
       const postList = document.querySelector('.post-list');
-      
+
       if (mainElement && postList && posts.length > 0) {
         const existingSentinel = document.getElementById('scroll-sentinel');
         if (existingSentinel) {
           existingSentinel.remove();
         }
-        
+
         mainElement.appendChild(sentinel);
         observer.observe(sentinel);
         return true;
@@ -122,7 +121,7 @@ function App() {
           return () => clearTimeout(timer2);
         }
       }, 100);
-      
+
       return () => {
         clearTimeout(timer1);
         const sentinelElement = document.getElementById('scroll-sentinel');
@@ -147,47 +146,47 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <Modal 
-        isVisible={isFormVisible} 
-        onClose={handleCloseForm}
-        onPostCreated={handlePostCreated}
-      />
-      <Header
-        onAddClick={handleAddClick}
-        searchTerm={searchQuery}
-        onSearchChange={handleSearchChange}
-      />
-      <main className="main">
-        
-        {posts.length === 0 && (
-          <div className="no-posts">
-            <p>No posts found.</p>
-          </div>
-        )}
-        
-        {posts.length > 0 && (
-          <div className="post-list">
-            {posts.map((post) => (
-              <PostItem
-                key={post._id}
-                id={post._id}
-                postData={post}
-                type={post.type}
-                onView={handlePostView}
-              />
-            ))}
-          </div>
-        )}
-        
-        
-        {!pagination.hasNextPage && posts.length > 0 && (
-          <div className="end-message">
-            <p>You've reached the end!</p>
-          </div>
-        )}
-      </main>
-    </div>
+      <div className="App">
+        <Modal
+            isVisible={isFormVisible}
+            onClose={handleCloseForm}
+            onPostCreated={handlePostCreated}
+        />
+        <Header
+            onAddClick={handleAddClick}
+            searchTerm={searchQuery}
+            onSearchChange={handleSearchChange}
+        />
+        <main className="main">
+
+          {posts.length === 0 && (
+              <div className="no-posts">
+                <p>No posts found.</p>
+              </div>
+          )}
+
+          {posts.length > 0 && (
+              <div className="post-list">
+                {posts.map((post) => (
+                    <PostItem
+                        key={post._id}
+                        id={post._id}
+                        postData={post}
+                        type={post.type}
+                        onView={handlePostView}
+                    />
+                ))}
+              </div>
+          )}
+
+
+          {!pagination.hasNextPage && posts.length > 0 && (
+              <div className="end-message">
+                <p>You've reached the end!</p>
+              </div>
+          )}
+        </main>
+      </div>
   );
 }
 

@@ -94,7 +94,6 @@ const CommentThread: FC<Props> = ({
         <CommentItem
           comment={comment}
           onReply={handleReplyToComment}
-          onLike={onLike}
           onUpdate={onUpdate}
           currentUserId={currentUserId}
         />

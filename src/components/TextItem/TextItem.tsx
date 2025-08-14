@@ -63,9 +63,9 @@ const TextItem: FC<Props> = ({ id, onView }) => {
       onClick={handleClick}
     >
       <h2 className={classes.title}>{fetchedPostData.title}</h2>
-      <span className={classes.author}>By: {getAuthorName()}</span>
-      <p className={classes.content}>{fetchedPostData.content}</p>
-      
+      <p className={classes.author}>By: {getAuthorName()}</p>
+      <span className={ classes.desription}>{fetchedPostData.description}</span>
+      <span className={classes.content}>{fetchedPostData.content}</span>
     </div>
   );
 };

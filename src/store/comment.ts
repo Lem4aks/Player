@@ -111,35 +111,35 @@ const commentsSlice = createSlice({
         };
       })
 
-      .addCase(createComment.fulfilled, (state, action) => {
-        const { comment: newComment, originalData } = action.payload;
+        .addCase(createComment.fulfilled, (state, action) => {
+          const { comment: newComment, originalData } = action.payload;
 
-        if (!newComment) return;
+          if (!newComment) return;
 
-        if (originalData.postId && !originalData.parentCommentId) {
-          if (!state.comments[originalData.postId]) {
-            state.comments[originalData.postId] = [];
-          }
-          state.comments[originalData.postId].unshift(newComment);
-          state.totalComments += 1;
-        } else if (originalData.parentCommentId) {
-          if (!state.replies[originalData.parentCommentId]) {
-            state.replies[originalData.parentCommentId] = [];
-          }
-          state.replies[originalData.parentCommentId].unshift(newComment);
-
-          if (originalData.postId && state.comments[originalData.postId]) {
-            state.comments[originalData.postId].unshift(newComment);
-          }
-
-          Object.keys(state.comments).forEach(postId => {
-            const parentComment = state.comments[postId].find(c => c._id === originalData.parentCommentId);
-            if (parentComment && parentComment.counts) {
-              parentComment.counts.children = (parentComment.counts.children || 0) + 1;
+          if (originalData.postId && !originalData.parentCommentId) {
+            if (!state.comments[originalData.postId]) {
+              state.comments[originalData.postId] = [];
             }
-          });
-        }
-      })
+            state.comments[originalData.postId] = [newComment, ...state.comments[originalData.postId]];
+            state.totalComments += 1;
+          } else if (originalData.parentCommentId) {
+            if (!state.replies[originalData.parentCommentId]) {
+              state.replies[originalData.parentCommentId] = [];
+            }
+            state.replies[originalData.parentCommentId] = [newComment, ...state.replies[originalData.parentCommentId]];
+
+            if (originalData.postId && state.comments[originalData.postId]) {
+              state.comments[originalData.postId] = [newComment, ...state.comments[originalData.postId]];
+            }
+
+            Object.keys(state.comments).forEach(postId => {
+              const parentComment = state.comments[postId].find(c => c._id === originalData.parentCommentId);
+              if (parentComment && parentComment.counts) {
+                parentComment.counts.children = (parentComment.counts.children || 0) + 1;
+              }
+            });
+          }
+        })
 
       .addCase(updateComment.fulfilled, (state, action) => {
         const updatedComment = action.payload.comment;
