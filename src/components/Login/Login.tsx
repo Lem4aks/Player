@@ -54,7 +54,7 @@ const Login: FC = () => {
             <Input
               type='email'
               value={formData.email}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                 setFormData({ ...formData, email: e.target.value })
               }
               required
@@ -67,7 +67,7 @@ const Login: FC = () => {
             <Input
               type='password'
               value={formData.password}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                 setFormData({ ...formData, password: e.target.value })
               }
               required

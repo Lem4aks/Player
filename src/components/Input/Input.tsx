@@ -1,14 +1,15 @@
     import classes from './styles.module.scss';
-import { FC, InputHTMLAttributes, forwardRef, ReactNode } from 'react';
+import { FC, InputHTMLAttributes, TextareaHTMLAttributes, forwardRef, ReactNode, ChangeEvent } from 'react';
 
-interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
+interface Props extends Omit<InputHTMLAttributes<HTMLInputElement> & TextareaHTMLAttributes<HTMLTextAreaElement>, 'size'> {
+  onChange?: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   label?: string;
   error?: string;
   rightIcon?: ReactNode;
   onRightIconClick?: () => void;
 }
 
-const Input: FC<Props> = forwardRef<HTMLInputElement, Props>(
+const Input: FC<Props> = forwardRef<HTMLInputElement | HTMLTextAreaElement, Props>(
   ({ label, error, rightIcon, onRightIconClick, className, disabled, ...props }, ref) => {
     const inputClasses = [
       classes.input,
@@ -20,22 +21,25 @@ const Input: FC<Props> = forwardRef<HTMLInputElement, Props>(
       .filter(Boolean)
       .join(' ');
 
-    return (
-      <div className={classes.inputWrapper}>
-        {label && <label className={classes.label}>{label}</label>}
+    const isTextarea = 'rows' in props;
+  const Component = isTextarea ? 'textarea' : 'input';
 
-        <div className={classes.inputContainer}>
-          <input ref={ref} className={inputClasses} disabled={disabled} {...props} />
+  return (
+    <div className={classes.inputWrapper}>
+      {label && <label className={classes.label}>{label}</label>}
 
-          {rightIcon && (
-            <div className={classes.rightIcon} onClick={onRightIconClick}>
-              {rightIcon}
-            </div>
-          )}
-        </div>
-        <div className={classes.errorText}>{error || ''}</div>
+      <div className={classes.inputContainer}>
+        <Component ref={ref as any} className={inputClasses} disabled={disabled} {...props} />
+
+        {rightIcon && (
+          <div className={classes.rightIcon} onClick={onRightIconClick}>
+            {rightIcon}
+          </div>
+        )}
       </div>
-    );
+      <div className={classes.errorText}>{error || ''}</div>
+    </div>
+  );
   }
 );
 

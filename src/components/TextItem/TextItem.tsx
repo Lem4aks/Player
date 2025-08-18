@@ -7,9 +7,10 @@ import { postApi } from "../../api/postApi";
 interface Props {
   id: string;
   onView?: (postId: string) => Promise<void>;
+  isPreview?: boolean;
 }
 
-const TextItem: FC<Props> = ({ id, onView }) => {
+const TextItem: FC<Props> = ({ id, onView, isPreview = false }) => {
   const navigate = useNavigate();
   const [fetchedPostData, setFetchedPostData] = useState<any>(null);
 
@@ -65,7 +66,14 @@ const TextItem: FC<Props> = ({ id, onView }) => {
       <h2 className={classes.title}>{fetchedPostData.title}</h2>
       <p className={classes.author}>By: {getAuthorName()}</p>
       <span className={ classes.desription}>{fetchedPostData.description}</span>
-      <span className={classes.content}>{fetchedPostData.content}</span>
+      <span className={classes.content}>
+        {isPreview && fetchedPostData.content ? 
+          (fetchedPostData.content.length > 150 ? 
+            fetchedPostData.content.substring(0, 150) + '...' : 
+            fetchedPostData.content) : 
+          fetchedPostData.content
+        }
+      </span>
     </div>
   );
 };

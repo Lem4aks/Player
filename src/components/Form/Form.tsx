@@ -173,7 +173,7 @@ const Form: FC<Props> = ({ onClose, onPostCreated }) => {
 
           {typeValue === 'text' ? (
               <div className={classes.inputwrapper}>
-            <textarea
+            < Input
                 {...register('content', {
                   required: typeValue === 'text' ? 'Content is required' : true,
                   minLength: { value: 10, message: 'Content must be at least 10 characters' }
@@ -182,14 +182,14 @@ const Form: FC<Props> = ({ onClose, onPostCreated }) => {
                 rows={3}
                 className={classes.textarea}
             />
-                {errors.content && <span className={classes.error}>{errors.content.message}</span>}
               </div>
           ) : null}
 
           <div className={classes.inputwrapper}>
-          <textarea
+          <Input
               {...register('description', {
                 required: false,
+                maxLength: { value: 100, message: 'Description must be at most 100 characters' },
               })}
               placeholder='Description'
               rows={3}

@@ -69,7 +69,7 @@ const Register: FC = () => {
             <Input
               type='text'
               value={formData.username}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                 setFormData({ ...formData, username: e.target.value })
               }
               required
@@ -81,7 +81,7 @@ const Register: FC = () => {
             <Input
               type='text'
               value={formData.name}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                 setFormData({ ...formData, name: e.target.value })
               }
               label='Name'
@@ -94,7 +94,7 @@ const Register: FC = () => {
             <Input
               type='email'
               value={formData.email}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                 setFormData({ ...formData, email: e.target.value })
               }
               label='Email'
@@ -107,7 +107,7 @@ const Register: FC = () => {
             <Input
               type='password'
               value={formData.password}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                 setFormData({ ...formData, password: e.target.value })
               }
               label='Password'
@@ -120,7 +120,7 @@ const Register: FC = () => {
             <Input
               type='password'
               value={formData.confirmPassword}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
                 setFormData({ ...formData, confirmPassword: e.target.value })
               }
               label='Confirm Password'

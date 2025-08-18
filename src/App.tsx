@@ -59,7 +59,7 @@ function App() {
       setIsLoadingMore(true);
       await dispatch(fetchAllPosts({
         page: pagination.currentPage + 1,
-        limit: 2,
+        limit: 4,
         loadMore: true
       })).unwrap();
 
@@ -171,9 +171,9 @@ function App() {
                     <PostItem
                         key={post._id}
                         id={post._id}
-                        postData={post}
                         type={post.type}
                         onView={handlePostView}
+                        isPreview={true}
                     />
                 ))}
               </div>

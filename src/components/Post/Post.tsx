@@ -46,7 +46,6 @@ const Post = () => {
   useEffect(() => {
     if (postId) {
       dispatch(fetchPostById(postId));
-      dispatch(fetchCommentsByPostId({ postId, page: 1, limit: 10 }));
     }
     
     return () => {
@@ -116,9 +115,7 @@ const Post = () => {
   if (!currentPost) {
     return (
       <div className={classes.container}>
-        <div className={classes.loadingContainer}>
           <Loading />
-        </div>
       </div>
     );
   }
@@ -135,7 +132,6 @@ const Post = () => {
         >
           <PostItem
             id={currentPost._id}
-            postData={currentPost}
             type={currentPost.type}
             onVideoClick={() => toggleFullscreen()}
             videoRef={videoRef as RefObject<HTMLVideoElement>}
@@ -162,11 +158,7 @@ const Post = () => {
             <LikeIcon />
           </button>
         </div>
-
-        <div className={classes.description}>
-          <p>{currentPost.description}</p>
-        </div>
-
+        <p className={classes.description}>{currentPost.description}</p>
         <Comments
           postId={currentPost._id}
           onCommentsUpdate={handleCommentsUpdate}

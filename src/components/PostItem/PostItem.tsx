@@ -6,29 +6,29 @@ import VideoItem from "../VideoItem/VideoItem";
 
 interface Props {
   id: string;
-  postData: any;
   type: "video" | "text" | "image";
   onView?: (postId: string) => Promise<void>;
   onVideoClick?: (videoId: string, videoElement: HTMLVideoElement) => void;
   videoRef?: React.RefObject<HTMLVideoElement>;
   isFullscreen?: boolean;
   showFullscreenControls?: boolean;
+  isPreview?: boolean;
 }
 
 const PostItem: FC<Props> = ({ 
   id, 
-  postData,
   type, 
   onView, 
   onVideoClick, 
   videoRef, 
   isFullscreen = false, 
-  showFullscreenControls = false 
+  showFullscreenControls = false,
+  isPreview = false
 }) => {
   const renderMediaItem = () => {
     switch (type) {
       case "text":
-        return <TextItem id={id} onView={onView} />;
+        return <TextItem id={id} onView={onView} isPreview={isPreview} />;
       case "image":
         return <ImageItem id={id} onView={onView} />;
       case "video":
